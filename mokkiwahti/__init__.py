@@ -29,13 +29,13 @@ def create_app(test_config=None):
     db.init_app(app)
 
     # Register ConverterClasses to be used in routing
-
     from . import api
     from mokkiwahti.utils import SensorConverter, MeasurementConverter
 
     app.url_map.converters["sensor"] = SensorConverter
     app.url_map.converters["measurement"] = MeasurementConverter
 
+    # Register blueprint. Check api.py for more blueprint stuff
     app.register_bluepint(api.api_pb)
 
     return app
