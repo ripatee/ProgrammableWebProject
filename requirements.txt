@@ -1,3 +1,6 @@
 Flask==3.0.1
 Flask-SQLAlchemy==3.1.1
 SQLAlchemy==2.0.25
+pytest==8.0.1
+pytest-cov==8.0.1
+jsonschema==4.21.1

@@ -16,5 +16,7 @@ setup(
         "jsonschema",
         "rfc3339-validator",
         "SQLAlchemy",
+        "pytest",
+        "pytest-cov"
     ]
 )
