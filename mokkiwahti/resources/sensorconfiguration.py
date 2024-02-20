@@ -15,3 +15,4 @@ class SensorConfigurationItem(Resource):
 
     def post(self):
         pass
+    

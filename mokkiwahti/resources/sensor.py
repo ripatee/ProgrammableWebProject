@@ -1,4 +1,3 @@
-import json
 from flask_restful import Resource
 
 class SensorCollection(Resource):
@@ -16,3 +15,4 @@ class SensorItem(Resource):
 
     def post(self):
         pass
+    

@@ -1,4 +1,3 @@
-import json
 from flask_restful import Resource
 
 class LocationCollection(Resource):
@@ -16,3 +15,4 @@ class LocationItem(Resource):
 
     def post(self):
         pass
+    
