@@ -1,21 +1,4 @@
-from json import dumps
-from flask import Flask, request
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.engine import Engine
-from sqlalchemy import event
-
-app = Flask("db")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy(app)
-
-# enable foreign keys usage
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
+from mokkiwahti import db
 
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
