@@ -36,6 +36,6 @@ def create_app(test_config=None):
     app.url_map.converters["measurement"] = MeasurementConverter
 
     # Register blueprint. Check api.py for more blueprint stuff
-    app.register_bluepint(api.api_pb)
+    app.register_blueprint(api.api_bp)
 
     return app
