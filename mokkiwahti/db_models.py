@@ -1,27 +1,16 @@
-from json import dumps
-from flask import Flask, request
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.engine import Engine
-from sqlalchemy import event
+from mokkiwahti import db
 
-app = Flask("db")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy(app)
-
-# enable foreign keys usage
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
+# ORM classes and related functions live here
 
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False)
+    sensor_id = db.Column(db.Integer, db.ForeignKey("sensor.id", ondelete="SET NULL"))
+    measurement_id = db.Column(db.Integer, db.ForeignKey("measurement.id", ondelete="SET NULL"))
     
     sensor = db.relationship("Sensor", back_populates="location")
+    measurement = db.relationship("Measurement", back_populates="location")
+
 
 class Sensor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,7 +18,7 @@ class Sensor(db.Model):
     location_id = (db.Integer, db.ForeignKey("location.id", ondelete="SET NULL"))
 
     location = db.relationship("Location", back_populates="sensor")
-    measurement = db.relationship("Measurement", back_populates="location")
+    measurement = db.relationship("Measurement", back_populates="sensor")
     sensor_configuration = db.relationship("SensorConfiguration", back_populates="sensor")
 
 class Measurement(db.Model):
@@ -41,6 +30,7 @@ class Measurement(db.Model):
     location_id = (db.Integer, db.ForeignKey("location.id", ondelete="SET NULL"))
 
     location = db.relationship("Location", back_populates="measurement")
+    sensor = db.relationship("Sensor", back_populates="measurement")
 
 class SensorConfiguration(db.Model):
     id = db.Column(db.Integer, primary_key=True)

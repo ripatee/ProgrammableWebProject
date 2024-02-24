@@ -12,3 +12,11 @@ __Remember to include all required documentation and HOWTOs, including how to cr
 ## Database
 
 Database used in this project is SQLite.
+
+## Tests
+
+Run tests with the following command: 
+
+```
+python -m pytest
+```
