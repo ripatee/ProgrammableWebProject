@@ -8,7 +8,7 @@ class Location(db.Model):
     #sensor_id = db.Column(db.Integer, db.ForeignKey("sensor.id", ondelete="SET NULL"))
     #measurement_id = db.Column(db.Integer, db.ForeignKey("measurement.id", ondelete="SET NULL"))
     
-    sensor = db.relationship("Sensor",primaryjoin="Location.id == Sensor.location_id", back_populates="location")
+    sensors = db.relationship("Sensor",primaryjoin="Location.id == Sensor.location_id", back_populates="location")
     measurements = db.relationship("Measurement", primaryjoin="Location.id == Measurement.location_id", back_populates="location")
 
 
@@ -17,9 +17,9 @@ class Sensor(db.Model):
     name = db.Column(db.String(64), nullable=False, unique=True) # serial code etc?
     location_id = db.Column(db.Integer, db.ForeignKey("location.id", ondelete="SET NULL"))
 
-    location = db.relationship("Location", back_populates="sensor")
+    location = db.relationship("Location", back_populates="sensors")
     measurements = db.relationship("Measurement", back_populates="sensor")
-    sensor_configuration = db.relationship("SensorConfiguration", back_populates="sensor")
+    sensor_configuration = db.relationship("SensorConfiguration", back_populates="sensor", uselist=False)
 
 class Measurement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
