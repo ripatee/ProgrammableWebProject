@@ -13,6 +13,14 @@ __Remember to include all required documentation and HOWTOs, including how to cr
 
 Database used in this project is SQLite.
 
+## Requirements
+
+Installing requirements:
+
+```
+pip install -r requirements.txt
+```
+
 ## Tests
 
 Run tests with the following command: 
