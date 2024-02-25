@@ -5,20 +5,20 @@ from mokkiwahti import db
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False)
-    sensor_id = db.Column(db.Integer, db.ForeignKey("sensor.id", ondelete="SET NULL"))
-    measurement_id = db.Column(db.Integer, db.ForeignKey("measurement.id", ondelete="SET NULL"))
+    #sensor_id = db.Column(db.Integer, db.ForeignKey("sensor.id", ondelete="SET NULL"))
+    #measurement_id = db.Column(db.Integer, db.ForeignKey("measurement.id", ondelete="SET NULL"))
     
-    sensor = db.relationship("Sensor", back_populates="location")
-    measurement = db.relationship("Measurement", back_populates="location")
+    sensor = db.relationship("Sensor",primaryjoin="Location.id == Sensor.location_id", back_populates="location")
+    measurements = db.relationship("Measurement", primaryjoin="Location.id == Measurement.location_id", back_populates="location")
 
 
 class Sensor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True) # serial code etc?
-    location_id = (db.Integer, db.ForeignKey("location.id", ondelete="SET NULL"))
+    location_id = db.Column(db.Integer, db.ForeignKey("location.id", ondelete="SET NULL"))
 
     location = db.relationship("Location", back_populates="sensor")
-    measurement = db.relationship("Measurement", back_populates="sensor")
+    measurements = db.relationship("Measurement", back_populates="sensor")
     sensor_configuration = db.relationship("SensorConfiguration", back_populates="sensor")
 
 class Measurement(db.Model):
@@ -27,10 +27,10 @@ class Measurement(db.Model):
     temperature = db.Column(db.Float, nullable=False)
     humidity = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
-    location_id = (db.Integer, db.ForeignKey("location.id", ondelete="SET NULL"))
+    location_id = db.Column(db.Integer, db.ForeignKey("location.id", ondelete="SET NULL"))
 
-    location = db.relationship("Location", back_populates="measurement")
-    sensor = db.relationship("Sensor", back_populates="measurement")
+    location = db.relationship("Location", back_populates="measurements")
+    sensor = db.relationship("Sensor", back_populates="measurements")
 
 class SensorConfiguration(db.Model):
     id = db.Column(db.Integer, primary_key=True)
