@@ -5,10 +5,8 @@ from mokkiwahti import db
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False)
-    #sensor_id = db.Column(db.Integer, db.ForeignKey("sensor.id", ondelete="SET NULL"))
-    #measurement_id = db.Column(db.Integer, db.ForeignKey("measurement.id", ondelete="SET NULL"))
     
-    sensors = db.relationship("Sensor",primaryjoin="Location.id == Sensor.location_id", back_populates="location")
+    sensors = db.relationship("Sensor", primaryjoin="Location.id == Sensor.location_id", back_populates="location")
     measurements = db.relationship("Measurement", primaryjoin="Location.id == Measurement.location_id", back_populates="location")
 
 
