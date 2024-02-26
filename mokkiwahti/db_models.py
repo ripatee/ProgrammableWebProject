@@ -30,6 +30,37 @@ class Measurement(db.Model):
     location = db.relationship("Location", back_populates="measurements")
     sensor = db.relationship("Sensor", back_populates="measurements")
 
+    @staticmethod
+    def get_schema():
+        schema = {
+            "type": "object",
+            "required": ["sensor_id", "temperature", "humidity"],
+            "properties": {
+                "sensor_id": {
+                    "description": "Sensors unique name",
+                    "type": "string"
+                },
+                "temperature": {
+                    "description": "Temperature value measured by sensor",
+                    "type": "number"
+                },
+                "humidity": {
+                    "description": "Humidity value measured by sensor",
+                    "type": "number"
+                },
+                "timestamp": {
+                    "description": "Time value added to measurement",
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "location_id": {
+                    "description": "Location of the sensor at the time of measurement",
+                    "type": "number"
+                }
+            }
+        }
+        return schema
+
 class SensorConfiguration(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sensor_id = db.Column(db.Integer, db.ForeignKey("sensor.id", ondelete="SET NULL"))
@@ -38,6 +69,32 @@ class SensorConfiguration(db.Model):
     treshold_max = db.Column(db.Float)
 
     sensor = db.relationship("Sensor", back_populates="sensor_configuration")
+
+    @staticmethod
+    def get_schema():
+        schema = {
+            "type": "object",
+            "required": ["sensor_id", "interval"],
+            "properties": {
+                "sensor_id": {
+                    "description": "Sensor's unique name",
+                    "type": "string"
+                },
+                "interval": {
+                    "description": "Time in between measurements",
+                    "type": "number"
+                },
+                "threshold_min": {
+                    "description": "Lower limit to trigger alarm sequence",
+                    "type": "number"
+                },
+                "threshold_max": {
+                    "description": "Upper limit to trigger alarm sequence",
+                    "type": "number"
+                }
+            }
+        }
+        return schema
 
 # ADD methods
 
