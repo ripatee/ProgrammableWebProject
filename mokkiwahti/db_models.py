@@ -14,10 +14,24 @@ class Sensor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True) # serial code etc?
     location_id = db.Column(db.Integer, db.ForeignKey("location.id", ondelete="SET NULL"))
+#    sensor_configuration_id = db.Column(db.Integer, db.ForeignKey("sensor_configuration.id", ondelete="SET NULL"))
 
     location = db.relationship("Location", back_populates="sensors")
     measurements = db.relationship("Measurement", back_populates="sensor")
     sensor_configuration = db.relationship("SensorConfiguration", back_populates="sensor", uselist=False)
+
+    def serialize(self, short_form=False):
+        serial = {
+            "name": self.name,
+        }
+        if not short_form:
+            serial["location"] = self.location and self.location.serialize()
+            serial["configuration"] = self.sensor_configuration and self.sensor_configuration.serialize()
+        return serial
+
+    def deserialize(self, json):
+        self.name = json["name"]
+
 
 class Measurement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
