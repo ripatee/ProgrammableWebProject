@@ -38,7 +38,7 @@ class Measurement(db.Model):
             "properties": {
                 "sensor_id": {
                     "description": "Sensors unique name",
-                    "type": "string"
+                    "type": "number"
                 },
                 "temperature": {
                     "description": "Temperature value measured by sensor",
@@ -78,7 +78,7 @@ class SensorConfiguration(db.Model):
             "properties": {
                 "sensor_id": {
                     "description": "Sensor's unique name",
-                    "type": "string"
+                    "type": "number"
                 },
                 "interval": {
                     "description": "Time in between measurements",
