@@ -1,6 +1,7 @@
 import os
 import pytest
 import tempfile
+from time import time
 from datetime import datetime
 
 from mokkiwahti import create_app, db
@@ -8,6 +9,7 @@ from mokkiwahti import create_app, db
 from mokkiwahti.db_models import Location, Sensor, Measurement, SensorConfiguration
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
+from sqlalchemy.exc import IntegrityError, StatementError
 
 # Enable foreigen key support
 @event.listens_for(Engine, "connect")
@@ -40,23 +42,23 @@ def _get_location(name="testipaikka"):
         name="{}".format(name),
     )
 
-def _get_sensor(number=1):
+def _get_sensor(name=1):
     return Sensor(
-        name="testsensor-{}".format(number),
+        name="testsensor-{}".format(name),
     )
     
-def _get_measurement():
+def _get_measurement(temperature=20.51, humidity=45.8):
     return Measurement(
-        temperature=20.51,
+        temperature=temperature,
         timestamp=datetime.now(),
-        humidity=45.8
+        humidity=humidity
     )
 
-def _get_sensorconfiguration(number=1):
+def _get_sensor_configuration(interval = 900, treshold_min = 15.0, treshold_max = 22.0):
     return SensorConfiguration(
-        interval = 900,
-        treshold_min = 15.0,
-        treshold_max = 22.0
+        interval = interval,
+        treshold_min = treshold_min,
+        treshold_max = treshold_max
     )
 
 def test_create_instances(app):
@@ -75,17 +77,17 @@ def test_create_instances(app):
         location = _get_location()
         sensor = _get_sensor()
         measurement = _get_measurement()
-        sensorconfiguration = _get_sensorconfiguration()
+        sensor_configuration = _get_sensor_configuration()
         sensor.measurements.append(measurement)
         location.measurements.append(measurement)
         location.sensors.append(sensor)
-        sensor.sensor_configuration = sensorconfiguration
+        sensor.sensor_configuration = sensor_configuration
 
         # 2.
         db.session.add(location)
         db.session.add(sensor)
         db.session.add(measurement)
-        db.session.add(sensorconfiguration)
+        db.session.add(sensor_configuration)
         db.session.commit()
 
         # 3.
@@ -98,7 +100,7 @@ def test_create_instances(app):
         db_sensor = Sensor.query.first()
         db_measurement = Measurement.query.first()
         db_location = Location.query.first()
-        db_sensorconfiguration = SensorConfiguration.query.first()
+        db_sensor_configuration = SensorConfiguration.query.first()
 
         # 4.
         # measurement
@@ -110,9 +112,9 @@ def test_create_instances(app):
         # sensor
         assert db_sensor.location == db_location
         assert db_measurement in db_sensor.measurements
-        assert db_sensor.sensor_configuration == db_sensorconfiguration
+        assert db_sensor.sensor_configuration == db_sensor_configuration
         # sensor configuration
-        assert db_sensorconfiguration.sensor == db_sensor
+        assert db_sensor_configuration.sensor == db_sensor
 
         # 5.
         # sensor
@@ -127,18 +129,150 @@ def test_create_instances(app):
         # location
         assert location.name == db_location.name
         # sensor configuration
-        assert sensorconfiguration.treshold_max == db_sensorconfiguration.treshold_max
-        assert sensorconfiguration.treshold_min == db_sensorconfiguration.treshold_min
-        assert sensorconfiguration.interval == db_sensorconfiguration.interval
-        assert sensorconfiguration.sensor_id == db_sensor.id
+        assert sensor_configuration.treshold_max == db_sensor_configuration.treshold_max
+        assert sensor_configuration.treshold_min == db_sensor_configuration.treshold_min
+        assert sensor_configuration.interval == db_sensor_configuration.interval
+        assert sensor_configuration.sensor_id == db_sensor.id
 
 
 
-def test_create_sensor(app):
+def test_sensor(app):
+    """
+    Test sensor class restrictions.
+    Name is required parameter
+    Name is unique
+    """
     with app.app_context():
-        sensor = Sensor(
-            name = "test-sensor-1"
-        )
-        db.session.add(sensor)
-        db.session.commit()
-        assert Sensor.query.count() == 1
+        # dont allow two sensors with same name
+        sensor1 = _get_sensor("samenamesensor")
+        sensor2 = _get_sensor("samenamesensor")
+        db.session.add(sensor1)
+        db.session.add(sensor2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        
+        db.session.rollback()
+
+        # name is mandatory
+        sensor1.name = None
+        db.session.add(sensor1)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+
+def test_sensor_configuration(app):
+    """
+    Test sensor configuration class restrictions.
+    only numerical values accepted
+    interval is mandatory
+    """
+    with app.app_context():
+        # interval is mandatory
+        sensor_configuration = _get_sensor_configuration()
+        sensor_configuration.interval = None
+        db.session.add(sensor_configuration)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        
+        db.session.rollback()
+        
+        # interval must be number
+        sc_nan_interval = _get_sensor_configuration(interval="100s")
+        db.session.add(sc_nan_interval)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+
+        # humidity must be number
+        sc_nan_th_min = _get_sensor_configuration(treshold_min="0°")
+        db.session.add(sc_nan_th_min)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+        
+        # temperature must be number
+        sc_nan_th_max = _get_sensor_configuration(treshold_max="100.0°")
+        db.session.add(sc_nan_th_max)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+
+def test_measurement(app):
+    with app.app_context():
+        # temperature must be number
+        meas_nan_temp = _get_measurement(temperature="100°")
+        db.session.add(meas_nan_temp)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+
+        # humidity must be number
+        meas_nan_hum = _get_measurement(humidity="100%")
+        db.session.add(meas_nan_hum)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+        
+        # timestamp must be a datetime obj
+        sc_bad_timestamp = _get_measurement()
+        sc_bad_timestamp.timestamp = time()
+        db.session.add(sc_bad_timestamp)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+        sc_bad_timestamp2 = _get_measurement()
+        sc_bad_timestamp2.timestamp = "today"
+        db.session.add(sc_bad_timestamp2)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+
+        # temperature is mandatory
+        meas_none_temp = _get_measurement(temperature=None)
+        db.session.add(meas_none_temp)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        # humidity is mandatory
+        meas_none_hum = _get_measurement(humidity=None)
+        db.session.add(meas_none_hum)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+        
+        # timestamp is mandatory
+        sc_none_timestamp = _get_measurement()
+        sc_none_timestamp.timestamp = None
+        db.session.add(sc_none_timestamp)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+def test_location(app):
+    """
+    Test location class restrictions.
+    Name is required parameter
+    Name is unique
+    """
+    with app.app_context():
+        # dont allow two sensors with same name
+        loc1 = _get_location("samenamespot")
+        loc2 = _get_location("samenamespot")
+        db.session.add(loc1)
+        db.session.add(loc2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+
+        db.session.rollback()
+
+        # name is mandatory
+        loc1.name = None
+        db.session.add(loc1)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        
+        
+
+
+
+        
