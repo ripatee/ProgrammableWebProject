@@ -45,5 +45,10 @@ class SensorItem(Resource):
     def put(self):
         pass
 
-    def delete(self): 
-        pass
+    def delete(self, sensor): 
+        # @TODO some error handling needed? Sensor is already validated by SensorConverter
+        db.session.delete(sensor)
+        db.session.commit()
+        return Response(
+            status=200
+        )
