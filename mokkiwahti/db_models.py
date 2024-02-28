@@ -6,7 +6,7 @@ from mokkiwahti import db
 
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), nullable=False)
+    name = db.Column(db.String(64), nullable=False, unique=True)
     
     sensors = db.relationship("Sensor", primaryjoin="Location.id == Sensor.location_id", back_populates="location")
     measurements = db.relationship("Measurement", primaryjoin="Location.id == Measurement.location_id", back_populates="location")
@@ -54,7 +54,7 @@ class Measurement(db.Model):
             "properties": {
                 "sensor_id": {
                     "description": "Sensors unique name",
-                    "type": "string"
+                    "type": "number"
                 },
                 "temperature": {
                     "description": "Temperature value measured by sensor",
@@ -94,7 +94,7 @@ class SensorConfiguration(db.Model):
             "properties": {
                 "sensor_id": {
                     "description": "Sensor's unique name",
-                    "type": "string"
+                    "type": "number"
                 },
                 "interval": {
                     "description": "Time in between measurements",
