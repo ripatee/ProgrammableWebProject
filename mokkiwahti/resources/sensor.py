@@ -1,7 +1,8 @@
-from mokkiwahti.db_models import Sensor
-from mokkiwahti import db
+import json
 from flask import request, Response, url_for
 from flask_restful import Resource
+from mokkiwahti.db_models import Sensor
+from mokkiwahti import db
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import Conflict, BadRequest, UnsupportedMediaType
 
@@ -9,7 +10,11 @@ from werkzeug.exceptions import Conflict, BadRequest, UnsupportedMediaType
 class SensorCollection(Resource):
 
     def get(self):
-        pass
+        sensors = []
+        for sensor in Sensor.query.all():
+            sensors.append(sensor.serialize())
+        
+        return Response(json.dumps(sensors), 200, mimetype='application/json')
 
     def post(self):
         if not request.json:
@@ -34,8 +39,8 @@ class SensorCollection(Resource):
 
 class SensorItem(Resource):
 
-    def get(self):
-        pass
+    def get(self, sensor):
+        return Response(json.dumps(sensor.serialize()), 200, mimetype='application/json')
 
     def put(self):
         pass

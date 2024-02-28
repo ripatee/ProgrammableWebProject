@@ -14,5 +14,8 @@ api_bp = Blueprint("api", __name__, url_prefix="/api")
 api = Api(api_bp)
 
 # @TODO Add all remaining resources
+
+# As we are using blueprint, the actual URI will be /api/locations/ etc.
 api.add_resource(LocationCollection, "/locations/")
 api.add_resource(SensorCollection, "/sensors/")
+api.add_resource(SensorItem, "/sensors/<sensor:sensor>/")
