@@ -1,6 +1,7 @@
 import json
 from flask import request, Response, url_for
 from flask_restful import Resource
+from jsonschema import validate, ValidationError
 from mokkiwahti.db_models import Sensor
 from mokkiwahti import db
 from sqlalchemy.exc import IntegrityError
@@ -19,6 +20,12 @@ class SensorCollection(Resource):
     def post(self):
         if not request.json:
             raise UnsupportedMediaType
+        
+        try:
+            validate(request.json, Sensor.get_schema())
+        except ValidationError as e:
+            raise BadRequest(description=str(e))
+
         try: 
             sensor = Sensor()
             sensor.deserialize(request.json)

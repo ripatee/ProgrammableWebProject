@@ -22,6 +22,20 @@ class Sensor(db.Model):
     measurements = db.relationship("Measurement", back_populates="sensor")
     sensor_configuration = db.relationship("SensorConfiguration", back_populates="sensor", uselist=False)
 
+    @staticmethod
+    def get_schema():
+        return {
+            "type": "object",
+            "required": ["name"],
+            "properties":
+            {
+                "name": {
+                    "description": "Sensors name",
+                    "type": "string"
+                }
+            }
+        }
+
     def serialize(self, short_form=False):
         serial = {
             "name": self.name,
