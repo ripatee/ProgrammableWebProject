@@ -1,3 +1,5 @@
+import click
+from flask.cli import with_appcontext
 from mokkiwahti import db
 
 # ORM classes and related functions live here
@@ -109,6 +111,11 @@ class SensorConfiguration(db.Model):
             }
         }
         return schema
+
+@click.command("init-db")
+@with_appcontext
+def init_db_command():
+    db.create_all()
 
 # ADD methods
 
