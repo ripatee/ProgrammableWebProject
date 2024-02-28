@@ -1,3 +1,5 @@
+import click
+from flask.cli import with_appcontext
 from mokkiwahti import db
 
 # ORM classes and related functions live here
@@ -14,10 +16,38 @@ class Sensor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True) # serial code etc?
     location_id = db.Column(db.Integer, db.ForeignKey("location.id", ondelete="SET NULL"))
+#    sensor_configuration_id = db.Column(db.Integer, db.ForeignKey("sensor_configuration.id", ondelete="SET NULL"))
 
     location = db.relationship("Location", back_populates="sensors")
     measurements = db.relationship("Measurement", back_populates="sensor")
     sensor_configuration = db.relationship("SensorConfiguration", back_populates="sensor", uselist=False)
+
+    @staticmethod
+    def get_schema():
+        return {
+            "type": "object",
+            "required": ["name"],
+            "properties":
+            {
+                "name": {
+                    "description": "Sensors name",
+                    "type": "string"
+                }
+            }
+        }
+
+    def serialize(self, short_form=False):
+        serial = {
+            "name": self.name,
+        }
+        if not short_form:
+            serial["location"] = self.location and self.location.serialize()
+            serial["configuration"] = self.sensor_configuration and self.sensor_configuration.serialize()
+        return serial
+
+    def deserialize(self, json):
+        self.name = json["name"]
+
 
 class Measurement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -95,6 +125,11 @@ class SensorConfiguration(db.Model):
             }
         }
         return schema
+
+@click.command("init-db")
+@with_appcontext
+def init_db_command():
+    db.create_all()
 
 # ADD methods
 

@@ -38,4 +38,7 @@ def create_app(test_config=None):
     # Register blueprint. Check api.py for more blueprint stuff
     app.register_blueprint(api.api_bp)
 
+    from . import db_models
+    app.cli.add_command(db_models.init_db_command)
+
     return app
