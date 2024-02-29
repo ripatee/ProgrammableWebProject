@@ -41,11 +41,11 @@ class Sensor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True) # serial code etc?
     location_id = db.Column(db.Integer, db.ForeignKey("location.id", ondelete="SET NULL"))
-#    sensor_configuration_id = db.Column(db.Integer, db.ForeignKey("sensor_configuration.id", ondelete="SET NULL"))
+    sensor_configuration_id = db.Column(db.Integer, db.ForeignKey("sensor_configuration.id", ondelete="SET NULL"))
 
     location = db.relationship("Location", back_populates="sensors")
     measurements = db.relationship("Measurement", back_populates="sensor")
-    sensor_configuration = db.relationship("SensorConfiguration", back_populates="sensor", uselist=False)
+    sensor_configuration = db.relationship("SensorConfiguration", back_populates="sensor")
 
     @staticmethod
     def get_schema():
@@ -118,12 +118,11 @@ class Measurement(db.Model):
 
 class SensorConfiguration(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    sensor_id = db.Column(db.Integer, db.ForeignKey("sensor.id", ondelete="SET NULL"))
     interval = db.Column(db.Integer, nullable=False)
     treshold_min = db.Column(db.Float)
     treshold_max = db.Column(db.Float)
 
-    sensor = db.relationship("Sensor", back_populates="sensor_configuration")
+    sensor = db.relationship("Sensor", back_populates="sensor_configuration", uselist=False)
 
     @staticmethod
     def get_schema():
