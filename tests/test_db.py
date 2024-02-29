@@ -132,7 +132,7 @@ def test_create_instances(app):
         assert sensor_configuration.treshold_max == db_sensor_configuration.treshold_max
         assert sensor_configuration.treshold_min == db_sensor_configuration.treshold_min
         assert sensor_configuration.interval == db_sensor_configuration.interval
-        assert sensor_configuration.sensor_id == db_sensor.id
+        assert sensor_configuration.sensor.id == db_sensor.id
 
 
 
