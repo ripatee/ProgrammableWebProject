@@ -1,4 +1,5 @@
 import os
+import json
 import pytest
 import tempfile
 from datetime import datetime
@@ -6,6 +7,7 @@ from datetime import datetime
 from mokkiwahti import create_app, db
 
 from mokkiwahti.db_models import Location, Sensor, Measurement, SensorConfiguration
+from jsonschema import validate, ValidationError
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
 
@@ -116,8 +118,29 @@ class TestLinkerResource(object):
 
     # test put method
     def test_put(self, client):
+        # add two sensors in same location
         resp = client.put(self.RESOURCE_URL)
         assert resp.status_code == 200
+        resp = client.put("/api/locations/testlocation-1/link/sensors/testsensor-2/")
+        assert resp.status_code == 200
+
+        # get sensor by name and check loc
+        get_sensors_resp = client.get("/api/sensors/testsensor-1/")
+        body = json.loads(get_sensors_resp.data)
+        validate(body, Sensor.get_schema())
+        assert body["location"]["name"] == "testlocation-1"
+
+        get_sensors_resp2 = client.get("/api/sensors/testsensor-2/")
+        body2 = json.loads(get_sensors_resp2.data)
+        validate(body, Sensor.get_schema())
+        assert body2["location"]["name"] == "testlocation-1"
+
+        # get loc by name and check both sensors
+        get_loc_resp = client.get("/api/locations/testlocation-1/")
+        body = json.loads(get_loc_resp.data)
+        validate(body, Location.get_schema())
+        for i, sensor in enumerate(body["sensors"], start=1):
+            assert "testsensor-" + str(i) == sensor["name"]
 
     # test put method with missing sensor
     def test_put_wo_sensor(self, client):
