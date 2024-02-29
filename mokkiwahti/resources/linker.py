@@ -17,5 +17,6 @@ class LocationSensorLinker(Resource):
     def delete(self, sensor, location):
         location.sensors.remove(sensor)
         db.session.commit()
+
         return Response(status=200)
     
