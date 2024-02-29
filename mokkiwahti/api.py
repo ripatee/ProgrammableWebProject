@@ -4,6 +4,7 @@ from flask_restful import Api
 from mokkiwahti.resources.location import LocationCollection, LocationItem
 from mokkiwahti.resources.measurement import MeasurementCollection, MeasurementItem
 from mokkiwahti.resources.sensor import SensorCollection, SensorItem
+from mokkiwahti.resources.linker import LocationSensorLinker
 
 # File where all API-related stuff lives, ex. routing the resources
 
@@ -20,3 +21,7 @@ api.add_resource(LocationCollection, "/locations/")
 api.add_resource(LocationItem, "/locations/<location:location>/")
 api.add_resource(SensorCollection, "/sensors/")
 api.add_resource(SensorItem, "/sensors/<sensor:sensor>/")
+api.add_resource(MeasurementCollection, 
+                 "/sensors/<sensor:sensor>/measurements/",
+                 "/sensors/<location:location>/measurements/")
+api.add_resource(LocationSensorLinker, "/locations/<location:location>/link/sensors/<sensor:sensor>/")

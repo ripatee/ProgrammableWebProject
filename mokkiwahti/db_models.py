@@ -30,7 +30,7 @@ class Location(db.Model):
             "name": self.name,
         }
         if not short_form:
-            serial["sensors"] = self.sensors and self.sensor.serialize()
+            serial["sensors"] = self.sensors and [sensor.serialize(short_form=True) for sensor in self.sensors]
         return serial
 
     def deserialize(self, json):
@@ -66,8 +66,9 @@ class Sensor(db.Model):
             "name": self.name,
         }
         if not short_form:
-            serial["location"] = self.location and self.location.serialize()
+            serial["location"] = self.location and self.location.serialize(short_form=True)
             serial["configuration"] = self.sensor_configuration and self.sensor_configuration.serialize()
+        
         return serial
 
     def deserialize(self, json):
