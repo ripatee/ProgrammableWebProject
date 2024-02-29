@@ -11,6 +11,31 @@ class Location(db.Model):
     sensors = db.relationship("Sensor", primaryjoin="Location.id == Sensor.location_id", back_populates="location")
     measurements = db.relationship("Measurement", primaryjoin="Location.id == Measurement.location_id", back_populates="location")
 
+    @staticmethod
+    def get_schema():
+        return {
+            "type": "object",
+            "required": ["name"],
+            "properties":
+            {
+                "name": {
+                    "description": "Location name",
+                    "type": "string"
+                }
+            }
+        }
+
+    def serialize(self, short_form=False):
+        serial = {
+            "name": self.name,
+        }
+        if not short_form:
+            serial["sensors"] = self.sensors and self.sensor.serialize()
+        return serial
+
+    def deserialize(self, json):
+        self.name = json["name"]
+
 
 class Sensor(db.Model):
     id = db.Column(db.Integer, primary_key=True)

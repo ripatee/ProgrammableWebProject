@@ -1,4 +1,4 @@
-from mokkiwahti.db_models import Sensor, Measurement
+from mokkiwahti.db_models import Sensor, Measurement, Location
 from werkzeug.exceptions import NotFound
 from werkzeug.routing import BaseConverter
 
@@ -25,4 +25,15 @@ class MeasurementConverter(BaseConverter):
 
     def to_url(self, value):
         return str(value.id)
+
+class LocationConverter(BaseConverter):
+
+    def to_python(self, value):
+        db_location = Location.query.filter_by(name=value).first()
+        if db_location is None:
+            raise NotFound
+        return db_location
+
+    def to_url(self, value):
+        return value.name
     
