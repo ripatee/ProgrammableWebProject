@@ -53,12 +53,16 @@ class Sensor(db.Model):
     def get_schema():
         return {
             "type": "object",
-            "required": ["name"],
+            "required": ["name", "sensor_configuration"],
             "properties":
             {
                 "name": {
                     "description": "Sensors name",
                     "type": "string"
+                },
+                "sensor_configuration": {
+                    "desciption": "Configuration applied to sensor",
+                    "type": "object"
                 }
             }
         }
@@ -131,8 +135,8 @@ class Measurement(db.Model):
 class SensorConfiguration(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     interval = db.Column(db.Integer, nullable=False)
-    treshold_min = db.Column(db.Float)
-    treshold_max = db.Column(db.Float)
+    threshold_min = db.Column(db.Float)
+    threshold_max = db.Column(db.Float)
 
     sensor = db.relationship("Sensor", back_populates="sensor_configuration", uselist=False)
 
@@ -140,12 +144,8 @@ class SensorConfiguration(db.Model):
     def get_schema():
         schema = {
             "type": "object",
-            "required": ["sensor_id", "interval"],
+            "required": ["interval"],
             "properties": {
-                "sensor_id": {
-                    "description": "Sensor's unique name",
-                    "type": "number"
-                },
                 "interval": {
                     "description": "Time in between measurements",
                     "type": "number"
@@ -161,6 +161,19 @@ class SensorConfiguration(db.Model):
             }
         }
         return schema
+    
+    def serialize(self):
+        return {
+            "interval": self.interval,
+            "threshold_min": self.threshold_min,
+            "threshold_max": self.threshold_max
+        }
+    
+    def deserialize(self, json):
+        self.interval = json["interval"]
+        self.threshold_min = json.get("threshold_min")
+        self.threshold_max = json.get("threshold_max")
+
 
 @click.command("init-db")
 @with_appcontext

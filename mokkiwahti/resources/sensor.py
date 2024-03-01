@@ -2,7 +2,7 @@ import json
 from flask import request, Response, url_for
 from flask_restful import Resource
 from jsonschema import validate, ValidationError
-from mokkiwahti.db_models import Sensor
+from mokkiwahti.db_models import Sensor, SensorConfiguration
 from mokkiwahti import db
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import Conflict, BadRequest, UnsupportedMediaType
@@ -23,12 +23,18 @@ class SensorCollection(Resource):
         
         try:
             validate(request.json, Sensor.get_schema())
+            validate(request.json["sensor_configuration"], SensorConfiguration.get_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
 
         try: 
             sensor = Sensor()
             sensor.deserialize(request.json)
+
+            sensor_configuration = SensorConfiguration()
+            sensor_configuration.deserialize(request.json["sensor_configuration"])
+
+            sensor.sensor_configuration = sensor_configuration
 
             db.session.add(sensor)
             db.session.commit()
@@ -52,10 +58,12 @@ class SensorItem(Resource):
         
         try:
             validate(request.json, Sensor.get_schema())
+            validate(request.json["sensor_configuration"], SensorConfiguration.get_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
         
         sensor.deserialize(request.json)
+        sensor.sensor_configuration.deserialize(request.json["sensor_configuration"])
         db.session.commit()
 
         return Response(status=200, headers={

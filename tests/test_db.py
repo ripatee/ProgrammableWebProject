@@ -54,11 +54,11 @@ def _get_measurement(temperature=20.51, humidity=45.8):
         humidity=humidity
     )
 
-def _get_sensor_configuration(interval = 900, treshold_min = 15.0, treshold_max = 22.0):
+def _get_sensor_configuration(interval = 900, threshold_min = 15.0, threshold_max = 22.0):
     return SensorConfiguration(
         interval = interval,
-        treshold_min = treshold_min,
-        treshold_max = treshold_max
+        threshold_min = threshold_min,
+        threshold_max = threshold_max
     )
 
 def test_create_instances(app):
@@ -129,8 +129,8 @@ def test_create_instances(app):
         # location
         assert location.name == db_location.name
         # sensor configuration
-        assert sensor_configuration.treshold_max == db_sensor_configuration.treshold_max
-        assert sensor_configuration.treshold_min == db_sensor_configuration.treshold_min
+        assert sensor_configuration.threshold_max == db_sensor_configuration.threshold_max
+        assert sensor_configuration.threshold_min == db_sensor_configuration.threshold_min
         assert sensor_configuration.interval == db_sensor_configuration.interval
         assert sensor_configuration.sensor.id == db_sensor.id
 
@@ -184,14 +184,14 @@ def test_sensor_configuration(app):
         db.session.rollback()
 
         # humidity must be number
-        sc_nan_th_min = _get_sensor_configuration(treshold_min="0°")
+        sc_nan_th_min = _get_sensor_configuration(threshold_min="0°")
         db.session.add(sc_nan_th_min)
         with pytest.raises(StatementError):
             db.session.commit()
         db.session.rollback()
         
         # temperature must be number
-        sc_nan_th_max = _get_sensor_configuration(treshold_max="100.0°")
+        sc_nan_th_max = _get_sensor_configuration(threshold_max="100.0°")
         db.session.add(sc_nan_th_max)
         with pytest.raises(StatementError):
             db.session.commit()
@@ -271,9 +271,4 @@ def test_location(app):
         db.session.add(loc1)
         with pytest.raises(IntegrityError):
             db.session.commit()
-        
-        
-
-
-
         
