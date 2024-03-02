@@ -1,3 +1,7 @@
+'''
+This file contains ORM classes and methods
+'''
+
 from datetime import datetime
 
 import click
@@ -5,9 +9,11 @@ import click
 from flask.cli import with_appcontext
 from mokkiwahti import db
 
-# ORM classes and related functions live here
-
 class Location(db.Model):
+    '''
+    ORM class to represent location data
+    '''
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True)
 
@@ -20,6 +26,10 @@ class Location(db.Model):
 
     @staticmethod
     def get_schema():
+        '''
+        Returns the JSON schema for Location class
+        '''
+
         return {
             "type": "object",
             "required": ["name"],
@@ -33,6 +43,10 @@ class Location(db.Model):
         }
 
     def serialize(self, short_form=False):
+        '''
+        Serializes the Location object
+        '''
+
         serial = {
             "name": self.name,
         }
@@ -46,10 +60,18 @@ class Location(db.Model):
         return serial
 
     def deserialize(self, json):
+        '''
+        Deserializes the location class from a JSON object
+        '''
+
         self.name = json["name"]
 
 
 class Sensor(db.Model):
+    '''
+    ORM class to represent sensor data
+    '''
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True) # serial code etc?
     location_id = db.Column(db.Integer, db.ForeignKey("location.id", ondelete="SET NULL"))
@@ -63,6 +85,10 @@ class Sensor(db.Model):
 
     @staticmethod
     def get_schema():
+        '''
+        Returns the JSON schema for Sensor-class
+        '''
+
         return {
             "type": "object",
             "required": ["name", "sensor_configuration"],
@@ -80,6 +106,10 @@ class Sensor(db.Model):
         }
 
     def serialize(self, short_form=False):
+        '''
+        Serializes the sensor class
+        '''
+
         serial = {
             "name": self.name,
         }
@@ -91,10 +121,18 @@ class Sensor(db.Model):
         return serial
 
     def deserialize(self, json):
+        '''
+        Deserializes the Sensor class from a JSON object.
+        '''
+
         self.name = json["name"]
 
 
 class Measurement(db.Model):
+    '''
+    ORM class to represent measurement data
+    '''
+
     id = db.Column(db.Integer, primary_key=True)
     sensor_id = db.Column(db.Integer, db.ForeignKey("sensor.id", ondelete="SET NULL"))
     temperature = db.Column(db.Float, nullable=False)
@@ -106,6 +144,10 @@ class Measurement(db.Model):
     sensor = db.relationship("Sensor", back_populates="measurements")
 
     def serialize(self, short_form=False):
+        '''
+        Serializes the Measurement class
+        '''
+
         serial = {
             "temperature": self.temperature,
             "humidity": self.humidity,
@@ -118,12 +160,19 @@ class Measurement(db.Model):
         return serial
 
     def deserialize(self, json):
+        '''
+        Deserializes the Measurement class from a JSON object
+        '''
         self.temperature = json["temperature"]
         self.humidity = json["humidity"]
         self.timestamp = datetime.fromisoformat(json["timestamp"])
 
     @staticmethod
     def get_schema():
+        '''
+        Returns the Measurement class JSON Schema
+        '''
+
         schema = {
             "type": "object",
             "required": ["temperature", "humidity", "timestamp"],
@@ -146,6 +195,10 @@ class Measurement(db.Model):
         return schema
 
 class SensorConfiguration(db.Model):
+    '''
+    ORM class to represent sensor configuration data
+    '''
+
     id = db.Column(db.Integer, primary_key=True)
     interval = db.Column(db.Integer, nullable=False)
     threshold_min = db.Column(db.Float)
@@ -155,6 +208,10 @@ class SensorConfiguration(db.Model):
 
     @staticmethod
     def get_schema():
+        '''
+        Returns the SensorConfiguration class JSON Schema
+        '''
+
         schema = {
             "type": "object",
             "required": ["interval"],
@@ -176,6 +233,10 @@ class SensorConfiguration(db.Model):
         return schema
 
     def serialize(self):
+        '''
+        Serializes the SensorConfiguration class
+        '''
+
         return {
             "interval": self.interval,
             "threshold_min": self.threshold_min,
@@ -183,6 +244,9 @@ class SensorConfiguration(db.Model):
         }
 
     def deserialize(self, json):
+        '''
+        Deserializes the Measurement class from a JSON object
+        '''
         self.interval = json["interval"]
         self.threshold_min = json.get("threshold_min")
         self.threshold_max = json.get("threshold_max")
@@ -191,24 +255,37 @@ class SensorConfiguration(db.Model):
 @click.command("init-db")
 @with_appcontext
 def init_db_command():
+    '''
+    Callback function for 'init-db' CLI command
+    '''
+
     db.create_all()
 
 # ADD methods
 
-# add a location to the database
 def add_location(name):
+    '''
+    Add a location to the database
+    '''
+
     location = Location(location_name=name)
     db.session.add(location)
     db.session.commit()
 
-# add a sensor to the database
 def add_sensor(name, location_id):
+    '''
+    Add a sensor to the database
+    '''
+
     sensor = Sensor(device_name=name, location_id=location_id)
     db.session.add(sensor)
     db.session.commit()
 
-# add a measurement to the database
 def add_measurement(sensor_id, timestamp, temperature, humidity):
+    '''
+    Add a measurement to the database
+    '''
+
     # make sure sensor exists and get its location
     sensor = db.session.query(Sensor).filter(Sensor.sensor_id == sensor_id).first()
     if sensor:
@@ -224,108 +301,62 @@ def add_measurement(sensor_id, timestamp, temperature, humidity):
         # TODO Add proper ERR handler
         print(f"ERROR sensor with ID {sensor_id} not found. Action denied.")
 
-#add a config to sensor
-def add_config(sensor_id, threshold_max=None, threshold_min=None):
-    config = Sensor(sensor_id=sensor_id, threshold_max=threshold_max, threshold_min=threshold_min)
-    db.session.add(config)
-    db.session.commit()
 
 # GET methods
 
-
-# method to query all measurements
 def get_all_measurements():
+    '''
+    Method to query all measurements
+    '''
+
     return db.session.query(Measurement).all()
 
-# method to query measurements for a specific sensor
+
 def get_measurements_for_sensor(sensor_id):
+    '''
+    Method to query measurements for a specific sensor
+    '''
+
     return db.session.query(Measurement).filter(Measurement.sensor_id == sensor_id).all()
 
-# method to query measurements for a specific location
+
 def get_measurements_for_location(location_id):
+    '''
+    Method to query measurements for a specific location
+    '''
+
     return db.session.query(Measurement).filter(Measurement.location_id == location_id).all()
 
-# method to query all sensors
+
 def get_all_sensors():
+    '''
+    Method to query all sensors
+    '''
+
     return db.session.query(Sensor).all()
 
-# method to query all locations
+
 def get_all_locations():
+    '''
+    Method to query all locations
+    '''
+
     return db.session.query(Location).all()
 
-# method to query all configurations
+
 def get_all_configurations():
+    '''
+    Method to query all configurations
+    '''
+
     return db.session.query(SensorConfiguration).all()
 
-# method to query configurations by sensor_id
+
 def get_configuration_by_sensor_id(sensor_id):
-    return (db.session.query(SensorConfiguration)
-            .filter(SensorConfiguration.sensor_id == sensor_id)
-            .all())
+    '''
+    Method to query configurations by sensor_id
+    '''
 
-# add a location to the database
-def add_location(name):
-    location = Location(location_name=name)
-    db.session.add(location)
-    db.session.commit()
-
-# add a sensor to the database
-def add_sensor(name, location_id):
-    sensor = Sensor(device_name=name, location_id=location_id)
-    db.session.add(sensor)
-    db.session.commit()
-
-# add a measurement to the database
-def add_measurement(sensor_id, timestamp, temperature, humidity):
-    # make sure sensor exists and get its location
-    sensor = db.session.query(Sensor).filter(Sensor.sensor_id == sensor_id).first()
-    if sensor:
-        measurement = Measurement(  sensor_id=sensor_id,
-                                    timestamp=timestamp,
-                                    temperature=temperature,
-                                    humidity=humidity,
-                                    location_id=sensor.location_id
-                                )
-        db.session.add(measurement)
-        db.session.commit()
-    else:
-        # TODO Add proper ERR handler
-        print(f"ERROR sensor with ID {sensor_id} not found. Action denied.")
-
-#add a config to sensor
-def add_config(sensor_id, threshold_max=None, threshold_min=None):
-    config = Sensor(sensor_id=sensor_id, threshold_max=threshold_max, threshold_min=threshold_min)
-    db.session.add(config)
-    db.session.commit()
-
-# GET methods
-
-# method to query all measurements
-def get_all_measurements():
-    return db.session.query(Measurement).all()
-
-# method to query measurements for a specific sensor
-def get_measurements_for_sensor(sensor_id):
-    return db.session.query(Measurement).filter(Measurement.sensor_id == sensor_id).all()
-
-# method to query measurements for a specific location
-def get_measurements_for_location(location_id):
-    return db.session.query(Measurement).filter(Measurement.location_id == location_id).all()
-
-# method to query all sensors
-def get_all_sensors():
-    return db.session.query(Sensor).all()
-
-# method to query all locations
-def get_all_locations():
-    return db.session.query(Location).all()
-
-# method to query all configurations
-def get_all_configurations():
-    return db.session.query(SensorConfiguration).all()
-
-# method to query configurations by sensor_id
-def get_configuration_by_sensor_id(sensor_id):
     return (db.session.query(SensorConfiguration)
             .filter(SensorConfiguration.sensor_id == sensor_id)
             .all())
