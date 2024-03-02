@@ -11,8 +11,12 @@ class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True)
 
-    sensors = db.relationship("Sensor", primaryjoin="Location.id == Sensor.location_id", back_populates="location")
-    measurements = db.relationship("Measurement", primaryjoin="Location.id == Measurement.location_id", back_populates="location")
+    sensors = db.relationship("Sensor",
+                              primaryjoin="Location.id == Sensor.location_id",
+                              back_populates="location")
+    measurements = db.relationship("Measurement",
+                                   primaryjoin="Location.id == Measurement.location_id",
+                                   back_populates="location")
 
     @staticmethod
     def get_schema():
@@ -33,8 +37,12 @@ class Location(db.Model):
             "name": self.name,
         }
         if not short_form:
-            serial["sensors"] = self.sensors and [sensor.serialize(short_form=True) for sensor in self.sensors]
-            serial["measurements"] = self.measurements and [measurement.serialize(short_form=True) for measurement in self.measurements]
+            serial["sensors"] = (self.sensors and
+                                 [sensor.serialize(short_form=True)
+                                  for sensor in self.sensors])
+            serial["measurements"] = (self.measurements and
+                                      [measurement.serialize(short_form=True)
+                                       for measurement in self.measurements])
         return serial
 
     def deserialize(self, json):
@@ -45,7 +53,9 @@ class Sensor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True) # serial code etc?
     location_id = db.Column(db.Integer, db.ForeignKey("location.id", ondelete="SET NULL"))
-    sensor_configuration_id = db.Column(db.Integer, db.ForeignKey("sensor_configuration.id", ondelete="SET NULL"))
+    sensor_configuration_id = db.Column(db.Integer,
+                                        db.ForeignKey("sensor_configuration.id",
+                                                      ondelete="SET NULL"))
 
     location = db.relationship("Location", back_populates="sensors")
     measurements = db.relationship("Measurement", back_populates="sensor")
@@ -75,7 +85,8 @@ class Sensor(db.Model):
         }
         if not short_form:
             serial["location"] = self.location and self.location.serialize(short_form=True)
-            serial["configuration"] = self.sensor_configuration and self.sensor_configuration.serialize()
+            serial["configuration"] = (self.sensor_configuration
+                                        and self.sensor_configuration.serialize())
 
         return serial
 
@@ -248,7 +259,10 @@ def get_all_configurations():
 
 # method to query configurations by sensor_id
 def get_configuration_by_sensor_id(sensor_id):
-    return db.session.query(SensorConfiguration).filter(SensorConfiguration.sensor_id == sensor_id).all()
+    return (db.session.query(SensorConfiguration)
+            .filter(SensorConfiguration.sensor_id == sensor_id)
+            .all())
+
 # add a location to the database
 def add_location(name):
     location = Location(location_name=name)
@@ -312,4 +326,6 @@ def get_all_configurations():
 
 # method to query configurations by sensor_id
 def get_configuration_by_sensor_id(sensor_id):
-    return db.session.query(SensorConfiguration).filter(SensorConfiguration.sensor_id == sensor_id).all()
+    return (db.session.query(SensorConfiguration)
+            .filter(SensorConfiguration.sensor_id == sensor_id)
+            .all())

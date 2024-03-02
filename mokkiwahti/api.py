@@ -25,4 +25,5 @@ api.add_resource(MeasurementCollection,
                  "/sensors/<sensor:sensor>/measurements/",
                  "/locations/<location:location>/measurements/")
 api.add_resource(MeasurementItem, "/measurement/<measurement:measurement>")
-api.add_resource(LocationSensorLinker, "/locations/<location:location>/link/sensors/<sensor:sensor>/")
+api.add_resource(LocationSensorLinker, 
+                 "/locations/<location:location>/link/sensors/<sensor:sensor>/")

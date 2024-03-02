@@ -18,7 +18,6 @@ class LocationCollection(Resource):
 
         return Response(json.dumps(locations), 200, mimetype='application/json')
 
-
     def post(self): # add new location
         if not request.json:
             raise UnsupportedMediaType
@@ -70,4 +69,3 @@ class LocationItem(Resource):
         return Response(
             status=200
         )
-

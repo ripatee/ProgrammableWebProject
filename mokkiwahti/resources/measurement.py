@@ -14,9 +14,17 @@ class MeasurementCollection(Resource):
         measurements = []
         # Check if measurements are querried by location or by sensor
         if location is not None:
-            measurements_db = Measurement.query.join(Location).filter(Location.name == location.name).all()
+            measurements_db = (Measurement
+                               .query
+                               .join(Location)
+                               .filter(Location.name == location.name)
+                               .all())
         elif sensor is not None:
-            measurements_db = Measurement.query.join(Sensor).filter(Sensor.name == sensor.name).all()
+            measurements_db = (Measurement
+                               .query
+                               .join(Sensor)
+                               .filter(Sensor.name == sensor.name)
+                               .all())
 
         for measurement in measurements_db:
             measurements.append(measurement.serialize())
