@@ -15,17 +15,17 @@ class LocationCollection(Resource):
             locations.append(location.serialize())
 
         return Response(json.dumps(locations), 200, mimetype='application/json')
-        
+
 
     def post(self): # add new location
-        if not request.json:     
+        if not request.json:
             raise UnsupportedMediaType
-        
+
         try:
             validate(request.json, Location.get_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
-        
+
         try:
             location = Location()
             location.deserialize(request.json)
@@ -52,15 +52,15 @@ class LocationItem(Resource):
             validate(request.json, Location.get_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
-        
+
         location.deserialize(request.json)
         db.session.commit()
 
         return Response(status=200, headers={
             "Location": "Location TBA"
         })
-    
-    
+
+
     def delete(self, location): # delete specific measurement
         # error handing needed?
         db.session.delete(location)
@@ -68,5 +68,4 @@ class LocationItem(Resource):
         return Response(
             status=200
         )
-    
-    
+

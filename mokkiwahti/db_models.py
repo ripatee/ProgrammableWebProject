@@ -8,7 +8,7 @@ from mokkiwahti import db
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True)
-    
+
     sensors = db.relationship("Sensor", primaryjoin="Location.id == Sensor.location_id", back_populates="location")
     measurements = db.relationship("Measurement", primaryjoin="Location.id == Measurement.location_id", back_populates="location")
 
@@ -74,7 +74,7 @@ class Sensor(db.Model):
         if not short_form:
             serial["location"] = self.location and self.location.serialize(short_form=True)
             serial["configuration"] = self.sensor_configuration and self.sensor_configuration.serialize()
-        
+
         return serial
 
     def deserialize(self, json):
@@ -161,14 +161,14 @@ class SensorConfiguration(db.Model):
             }
         }
         return schema
-    
+
     def serialize(self):
         return {
             "interval": self.interval,
             "threshold_min": self.threshold_min,
             "threshold_max": self.threshold_max
         }
-    
+
     def deserialize(self, json):
         self.interval = json["interval"]
         self.threshold_min = json.get("threshold_min")

@@ -14,20 +14,20 @@ class SensorCollection(Resource):
         sensors = []
         for sensor in Sensor.query.all():
             sensors.append(sensor.serialize())
-        
+
         return Response(json.dumps(sensors), 200, mimetype='application/json')
 
     def post(self):
         if not request.json:
             raise UnsupportedMediaType
-        
+
         try:
             validate(request.json, Sensor.get_schema())
             validate(request.json["sensor_configuration"], SensorConfiguration.get_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
 
-        try: 
+        try:
             sensor = Sensor()
             sensor.deserialize(request.json)
 
@@ -42,7 +42,7 @@ class SensorCollection(Resource):
             raise Conflict(
                 description=f"Sensor with name: {sensor.name} already found"
             )
-        
+
         return Response(status=201, headers={
             "Location": url_for("api.sensoritem", sensor=sensor)
         })
@@ -55,13 +55,13 @@ class SensorItem(Resource):
     def put(self, sensor):
         if not request.json:
             raise UnsupportedMediaType
-        
+
         try:
             validate(request.json, Sensor.get_schema())
             validate(request.json["sensor_configuration"], SensorConfiguration.get_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
-        
+
         sensor.deserialize(request.json)
         sensor.sensor_configuration.deserialize(request.json["sensor_configuration"])
         db.session.commit()
@@ -70,7 +70,7 @@ class SensorItem(Resource):
             "Location": "Location in progress @TODO"
         })
 
-    def delete(self, sensor): 
+    def delete(self, sensor):
         # @TODO some error handling needed? Sensor is already validated by SensorConverter
         db.session.delete(sensor)
         db.session.commit()

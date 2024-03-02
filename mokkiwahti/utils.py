@@ -5,16 +5,16 @@ from werkzeug.routing import BaseConverter
 # Placeholder file for util functions and classes, ex. Converter classes
 
 class SensorConverter(BaseConverter):
-    
+
     def to_python(self, value):
         db_sensor = Sensor.query.filter_by(name=value).first()
         if db_sensor is None:
             raise NotFound
         return db_sensor
-        
+
     def to_url(self, value):
         return value.name
-    
+
 class MeasurementConverter(BaseConverter):
 
     def to_python(self, value):
@@ -36,4 +36,3 @@ class LocationConverter(BaseConverter):
 
     def to_url(self, value):
         return value.name
-    

@@ -13,10 +13,9 @@ class LocationSensorLinker(Resource):
         location.sensors.append(sensor)
         db.session.commit()
         return Response(status=200)
-    
+
     def delete(self, sensor, location):
         location.sensors.remove(sensor)
         db.session.commit()
 
         return Response(status=200)
-    

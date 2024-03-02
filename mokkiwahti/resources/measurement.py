@@ -26,12 +26,12 @@ class MeasurementCollection(Resource):
     def post(self, sensor):
         if not request.json:
             raise UnsupportedMediaType
-        
+
         try:
             validate(request.json, Measurement.get_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
-        
+
         # @TODO Is error handling needed here?
         measurement = Measurement()
         measurement.deserialize(request.json)
@@ -40,7 +40,7 @@ class MeasurementCollection(Resource):
 
         db.session.add(measurement)
         db.session.commit()
-        
+
         return Response(status=201, headers={
             "Location:": url_for("api.measurementitem", measurement=measurement)
         })
@@ -53,23 +53,22 @@ class MeasurementItem(Resource):
     def put(self, measurement):
         if not request.json:
             raise UnsupportedMediaType
-        
+
         try:
             validate(request.json, Measurement.get_schema(), format_checker=draft7_format_checker)
         except ValidationError as e:
             raise BadRequest(description=str(e))
-    
+
         measurement.deserialize(request.json)
         db.session.commit()
 
         return Response(status=200, headers={
-            "Location": url_for("api.measurementitem", measurement=measurement) 
+            "Location": url_for("api.measurementitem", measurement=measurement)
         })
-    
+
     def delete(self, measurement):
         db.session.delete(measurement)
         db.session.commit()
         return Response(
             status=200
         )
-    
