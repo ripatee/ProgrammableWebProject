@@ -45,7 +45,7 @@ class LocationCollection(Resource):
         try:
             validate(request.json, Location.get_schema())
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         try:
             location = Location()
@@ -53,10 +53,10 @@ class LocationCollection(Resource):
 
             db.session.add(location)
             db.session.commit()
-        except IntegrityError:
+        except IntegrityError as e:
             raise Conflict(
                 description=f"Location with name: {location.name} already found"
-            )
+            ) from e
         return Response(status=201, headers={
             "Location": url_for("api.locationitem", location=location)
         })
@@ -86,7 +86,7 @@ class LocationItem(Resource):
         try:
             validate(request.json, Location.get_schema())
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         location.deserialize(request.json)
         db.session.commit()

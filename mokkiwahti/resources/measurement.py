@@ -5,7 +5,7 @@ API resources related to measurements
 import json
 from flask import request, Response, url_for
 from flask_restful import Resource
-from jsonschema import validate, ValidationError, draft7_format_checker
+from jsonschema import validate, ValidationError, Draft7Validator
 
 from werkzeug.exceptions import BadRequest, UnsupportedMediaType
 
@@ -36,7 +36,6 @@ class MeasurementCollection(Resource):
                                .join(Sensor)
                                .filter(Sensor.name == sensor.name)
                                .all())
-
         for measurement in measurements_db:
             measurements.append(measurement.serialize())
 
@@ -57,9 +56,11 @@ class MeasurementCollection(Resource):
             raise UnsupportedMediaType
 
         try:
-            validate(request.json, Measurement.get_schema())
+            validate(request.json,
+                     Measurement.get_schema(),
+                     format_checker=Draft7Validator.FORMAT_CHECKER)
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         # @TODO Is error handling needed here?
         measurement = Measurement()
@@ -102,9 +103,9 @@ class MeasurementItem(Resource):
         try:
             validate(request.json,
                      Measurement.get_schema(),
-                     format_checker=draft7_format_checker)
+                     format_checker=Draft7Validator.FORMAT_CHECKER)
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         measurement.deserialize(request.json)
         db.session.commit()

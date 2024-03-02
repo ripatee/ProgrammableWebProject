@@ -47,7 +47,7 @@ class SensorCollection(Resource):
             validate(request.json, Sensor.get_schema())
             validate(request.json["sensor_configuration"], SensorConfiguration.get_schema())
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         try:
             sensor = Sensor()
@@ -63,7 +63,7 @@ class SensorCollection(Resource):
         except IntegrityError:
             raise Conflict(
                 description=f"Sensor with name: {sensor.name} already found"
-            )
+            ) from e
 
         return Response(status=201, headers={
             "Location": url_for("api.sensoritem", sensor=sensor)
@@ -96,7 +96,7 @@ class SensorItem(Resource):
             validate(request.json, Sensor.get_schema())
             validate(request.json["sensor_configuration"], SensorConfiguration.get_schema())
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         sensor.deserialize(request.json)
         sensor.sensor_configuration.deserialize(request.json["sensor_configuration"])
