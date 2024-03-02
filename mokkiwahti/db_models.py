@@ -1,5 +1,7 @@
-import click
 from datetime import datetime
+
+import click
+
 from flask.cli import with_appcontext
 from mokkiwahti import db
 

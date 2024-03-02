@@ -2,10 +2,11 @@ import json
 from flask import request, Response, url_for
 from flask_restful import Resource
 from jsonschema import validate, ValidationError, draft7_format_checker
+
+from werkzeug.exceptions import BadRequest, UnsupportedMediaType
+
 from mokkiwahti.db_models import Measurement, Location, Sensor
 from mokkiwahti import db
-from sqlalchemy.exc import IntegrityError
-from werkzeug.exceptions import Conflict, BadRequest, UnsupportedMediaType
 
 class MeasurementCollection(Resource):
 

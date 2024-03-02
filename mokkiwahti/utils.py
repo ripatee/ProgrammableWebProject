@@ -1,6 +1,6 @@
-from mokkiwahti.db_models import Sensor, Measurement, Location
 from werkzeug.exceptions import NotFound
 from werkzeug.routing import BaseConverter
+from mokkiwahti.db_models import Sensor, Measurement, Location
 
 # Placeholder file for util functions and classes, ex. Converter classes
 
