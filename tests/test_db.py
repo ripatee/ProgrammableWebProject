@@ -273,7 +273,43 @@ def test_location(app):
             db.session.commit()
         
         
+def test_multiple_sensors_in_location(app):
+    """
+    Test that sensors can have same location
+    """
+    with app.app_context():
+        location = _get_location()
+        sensor1 = _get_sensor(name="sensor1")
+        sensor2 = _get_sensor(name="sensor2")
+        location.sensors.extend([sensor1, sensor2])
 
+        db.session.add(location)
+        db.session.commit()
+
+        assert len(Location.query.first().sensors) == 2
+
+def test_access_nonexistent_sensor(app):
+    """
+    Test non-existing sensor query
+    """
+    with app.app_context():
+        non_existent_sensor = Sensor.query.filter_by(name="non_existent").first()
+        assert non_existent_sensor is None
+
+def test_unique_sensor_name(app):
+    """
+    Test sensors have unique names 
+    """
+    with app.app_context():
+        sensor1 = _get_sensor(name="unique_sensor")
+        sensor2 = _get_sensor(name="unique_sensor")
+        db.session.add(sensor1)
+        db.session.commit()
+
+        db.session.add(sensor2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
 
 
         
