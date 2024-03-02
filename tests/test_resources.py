@@ -25,7 +25,7 @@ def _get_sensor(name=1):
     return Sensor(
         name="testsensor-{}".format(name),
     )
-    
+
 def _get_measurement(temperature=20.51, humidity=45.8):
     return Measurement(
         temperature=temperature,
@@ -33,11 +33,11 @@ def _get_measurement(temperature=20.51, humidity=45.8):
         humidity=humidity
     )
 
-def _get_sensor_configuration(interval = 900, treshold_min = 15.0, treshold_max = 22.0):
+def _get_sensor_configuration(interval = 900, threshold_min = 15.0, threshold_max = 22.0):
     return SensorConfiguration(
         interval = interval,
-        treshold_min = treshold_min,
-        treshold_max = treshold_max
+        threshold_min = threshold_min,
+        threshold_max = threshold_max
     )
 
 def _populate_db():
@@ -46,8 +46,8 @@ def _populate_db():
         l = Location(name="testlocation-{}".format(i))
         sc = SensorConfiguration(
             interval = i,
-            treshold_min = i,
-            treshold_max = i
+            threshold_min = i,
+            threshold_max = i
         )
         m = Measurement(
             temperature = i,
@@ -100,14 +100,14 @@ class TestLocationResource(object):
         assert resp.status_code == 200
 
 class TestLinkerResource(object):
-    
+
     RESOURCE_URL = "/api/locations/testlocation-1/link/sensors/testsensor-1/"
 
     # no get method in resource
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 405
-    
+
     # no post method in resource
     def test_post(self, client):
         sensor_data = {"name": "testsensor-100"}
