@@ -1,3 +1,7 @@
+'''
+API resources related to measurements
+'''
+
 import json
 from flask import request, Response, url_for
 from flask_restful import Resource
@@ -9,8 +13,15 @@ from mokkiwahti.db_models import Measurement, Location, Sensor
 from mokkiwahti import db
 
 class MeasurementCollection(Resource):
+    '''
+    MeasurementCollection resourse. Supports GET and POSt methods
+    '''
 
     def get(self, location=None, sensor=None):
+        '''
+        Returns specific measurements by location or sensor.
+        '''
+
         measurements = []
         # Check if measurements are querried by location or by sensor
         if location is not None:
@@ -33,6 +44,15 @@ class MeasurementCollection(Resource):
 
 
     def post(self, sensor):
+        '''
+        Add new measurement to the database
+
+        Checks that the input is JSON and validates it agains the schema
+        Deserializes the Measurement object from JSON
+        Add measuerement to the database
+        Sends response containing location to the newly added measurements
+        '''
+
         if not request.json:
             raise UnsupportedMediaType
 
@@ -55,16 +75,34 @@ class MeasurementCollection(Resource):
         })
 
 class MeasurementItem(Resource):
+    '''
+    Measure item resource. Supports GET, PUT and DELETE.
+    '''
 
     def get(self, measurement):
-        return Response(json.dumps(measurement.serialize(), 200, mimetype='application/json'))
+        '''
+        Returns a Response object containin a specific measurement item
+        '''
+
+        return Response(json.dumps(measurement.serialize(),
+                                   status=200,
+                                   mimetype='application/json'))
 
     def put(self, measurement):
+        '''
+        Modifies an existing measurement resource
+
+        Checks that the input is a JSON and validates it agains the schema
+        Adds it to the database and returns a Response object with status code 200
+        '''
+
         if not request.json:
             raise UnsupportedMediaType
 
         try:
-            validate(request.json, Measurement.get_schema(), format_checker=draft7_format_checker)
+            validate(request.json,
+                     Measurement.get_schema(),
+                     format_checker=draft7_format_checker)
         except ValidationError as e:
             raise BadRequest(description=str(e))
 
@@ -76,6 +114,12 @@ class MeasurementItem(Resource):
         })
 
     def delete(self, measurement):
+        '''
+        Deletes a specific location item from the database
+
+        Returns a Response object with status code 200
+        '''
+
         db.session.delete(measurement)
         db.session.commit()
         return Response(
