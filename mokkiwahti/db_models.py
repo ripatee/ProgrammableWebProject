@@ -115,7 +115,7 @@ class Sensor(db.Model):
         }
         if not short_form:
             serial["location"] = self.location and self.location.serialize(short_form=True)
-            serial["configuration"] = (self.sensor_configuration
+            serial["sensor_configuration"] = (self.sensor_configuration
                                         and self.sensor_configuration.serialize())
 
         return serial
