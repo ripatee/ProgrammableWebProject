@@ -121,12 +121,28 @@ class TestLocationResource(object):
         assert resp.status_code == 201
         resp = client.get(self.RESOURCE_URL)
         body = json.loads(resp.data)
+        assert len(body) == 4
         new_found = False #temp to check that new loc is added
         for loc in body:
             validate(loc, Location.get_schema())
             if loc["name"] == "testlocation-100":
                 new_found = True
         assert new_found
+
+    def test_post_w_bad_data(self, client):
+        data = {"name": "testlocation-100"}
+        data["extrafield"] = "thisisnotsupposedtobehere"
+        resp = client.post(self.RESOURCE_URL, json=data)
+        assert resp.status_code == 400
+        resp = client.get(self.RESOURCE_URL)
+        body = json.loads(resp.data)
+        assert len(body) == 3
+        new_found = False #temp to check that new loc is added
+        for loc in body:
+            validate(loc, Location.get_schema())
+            if loc["name"] == "testlocation-100":
+                new_found = True
+        assert not new_found
 
 class TestLinkerResource(object):
 
@@ -193,11 +209,34 @@ class TestSensorResource(object):
         body = json.loads(resp.data)
         assert resp.status_code == 200
         new_found = False #temp to check that new sensor is added
+        assert len(body) == 4
         for sensor in body:
             validate(sensor, Location.get_schema())
             if sensor["name"] == "testsensor-100":
                 new_found = True
         assert new_found
+
+    def test_post_w_bad_data(self, client):
+        data = {"name": "testsensor-101"}
+        sc = SensorConfiguration(
+            interval = 900,
+            threshold_min = 15,
+            threshold_max = 25
+        )
+        data["sensor_configuration"] = sc.serialize()
+        data["extrafield"] = "thisisnotsupposedtobehere"
+        resp = client.post(self.RESOURCE_URL, json=data)
+        assert resp.status_code == 400
+        resp = client.get(self.RESOURCE_URL)
+        body = json.loads(resp.data)
+        assert resp.status_code == 200
+        new_found = False #temp to check that new sensor is added
+        assert len(body) == 3
+        for sensor in body:
+            validate(sensor, Location.get_schema())
+            if sensor["name"] == "testsensor-100":
+                new_found = True
+        assert not new_found
         
 @pytest.mark.skip(reason="Not implemented")
 class TestGetAllMeasurementResource(object):
@@ -243,5 +282,24 @@ class TestMeasurementsResource(object):
         assert resp.status_code == 200
         body = json.loads(resp.data)
         assert len(body) == 2
+        for meas in body:
+            validate(meas, Measurement.get_schema())
+        
+    def test_post_w_bad_data(self, client):
+        meas_test_obj =  Measurement(
+            temperature = 23.2,
+            humidity = 53.2,
+            timestamp = datetime.now()
+        )
+        meas_test_obj_serialized = meas_test_obj.serialize()
+        meas_test_obj_serialized["extrafield"] = "thisisnotsupposedtobehere"
+        #print("\n\nobject here\n", meas_test_obj_serialized, "\n\n") # debug print
+        resp = client.post(self.SENSOR_RESOURCE_URL, json=meas_test_obj_serialized)
+        assert resp.status_code == 400
+        resp = client.get(self.SENSOR_RESOURCE_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        #print("\n\nsaved here\n", body, "\n\n") # debug print
+        assert len(body) == 1
         for meas in body:
             validate(meas, Measurement.get_schema())
