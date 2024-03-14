@@ -311,5 +311,17 @@ def test_unique_sensor_name(app):
             db.session.commit()
         db.session.rollback()
 
-
+@pytest.mark.skip(reason="There's currently problem in database validation. Enable after fixing the issue")
+def test_too_long_name(app):
+    with app.app_context():
+        # form string with length of 65
+        too_long_name = "test1" * 13
+        sensor = _get_sensor(name=too_long_name)
+        db.session.add(sensor)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
         
+        location = _get_location(name=too_long_name)
+        db.session.add(location)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
