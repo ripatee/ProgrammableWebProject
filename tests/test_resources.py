@@ -183,7 +183,33 @@ class TestLinkerResource(object):
     def test_put_wo_location(self, client):
         resp = client.put("/api/locations/testlocation-100/link/sensors/testsensor-1/")
         assert resp.status_code == 404
-
+    
+    # test deleting
+    def test_delete(self, client):
+        # get data before
+        get_sensor_before = client.get("/api/sensors/testsensor-1/")
+        get_loc_before = client.get("/api/locations/testlocation-1/")
+        body_s_1 = json.loads(get_sensor_before.data)
+        body_l_1 = json.loads(get_loc_before.data)
+        # delete relationship
+        delete_resp = client.delete("/api/locations/testlocation-1/link/sensors/testsensor-1/")
+        assert(delete_resp.status_code == 200)
+        # get data after
+        get_sensor_after = client.get("/api/sensors/testsensor-1/")
+        get_loc_after = client.get("/api/locations/testlocation-1/")
+        body_s_2 = json.loads(get_sensor_after.data)
+        body_l_2 = json.loads(get_loc_after.data)
+        # check that object is not broken
+        validate(body_s_2, Sensor.get_schema())
+        validate(body_l_2, Location.get_schema())
+        # check that relationship existed
+        assert body_s_1["location"]["name"] == "testlocation-1"
+        assert len(body_l_1["sensors"]) == 1
+        assert "testsensor-1" == body_l_1["sensors"][0]["name"]
+        # check that relationship no more exists
+        assert body_s_2["location"] == None
+        assert len(body_l_2["sensors"]) == 0
+    
 class TestSensorResource(object):
 
     RESOURCE_URL = "/api/sensors/"
