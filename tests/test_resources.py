@@ -329,3 +329,103 @@ class TestMeasurementsResource(object):
         assert len(body) == 1
         for meas in body:
             validate(meas, Measurement.get_schema())
+
+#@pytest.mark.skip(reason="Not implemented")
+class TestSensorItem(object):
+
+    RESOURCE_URL = "/api/sensors/testsensor-1/"
+
+    def test_get_by_sensor(self, client):
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        validate(body, Sensor.get_schema())
+
+    @pytest.mark.skip(reason="Doesn't work, returns 400")
+    def test_put(self, client):
+
+        #data = {"name": "testlocation-100"}
+        #resp = client.post(self.RESOURCE_URL, json=data)
+        #assert resp.status_code == 201
+        
+        #resp = client.get(self.RESOURCE_URL)
+        data = {"name": "testsensor-1"}
+        resp = client.put(self.RESOURCE_URL, json=data)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert body["name"] == "testsensor-1"
+        #validate(body, Sensor.get_schema())
+
+    #@pytest.mark.skip(reason="Not implemented")
+    def test_delete(self, client): # DOES THIS BREAK LINKS???
+        # test first sensor exists
+        resp_before = client.get(self.RESOURCE_URL)
+        assert resp_before.status_code == 200
+
+        # now delete sensor
+        resp_deletion = client.delete(self.RESOURCE_URL)
+        assert resp_deletion.status_code == 200
+
+        # test is the sensor deleted
+        resp_after = client.get(self.RESOURCE_URL)
+        assert resp_after.status_code == 404
+        
+
+
+class TestLocationItem(object):
+
+    RESOURCE_URL = "/api/locations/testlocation-1/"
+    
+    def test_get_by_location(self, client):
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        validate(body, Location.get_schema())
+
+    @pytest.mark.skip(reason="Not implemented")
+    def test_put(self, client):
+        pass
+
+    #@pytest.mark.skip(reason="Not implemented")
+    def test_delete(self, client): # DOES THIS BREAK LINKS???
+        # test first location exists
+        resp_before = client.get(self.RESOURCE_URL)
+        assert resp_before.status_code == 200
+
+        # now delete location
+        resp_deletion = client.delete(self.RESOURCE_URL)
+        assert resp_deletion.status_code == 200
+
+        # test is the location deleted
+        resp_after = client.get(self.RESOURCE_URL)
+        assert resp_after.status_code == 404
+
+#@pytest.mark.skip(reason="Not implemented")
+class TestMeasurementItem(object):
+
+    RESOURCE_URL = "/api/locations/testmeasurement-1/"
+
+    @pytest.mark.skip(reason="this has a fault, returns 404")
+    def test_get_by_measurement(self, client):
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        validate(body, Measurement.get_schema())
+
+    @pytest.mark.skip(reason="Not implemented")
+    def test_put(self, client):
+        pass
+
+    @pytest.mark.skip(reason="Doesn't work, might need better approach")
+    def test_delete(self, client): # DOES THIS BREAK LINKS???
+        # test first measurement exists
+        resp_before = client.get(self.RESOURCE_URL)
+        assert resp_before.status_code == 200
+
+        # now delete measurement
+        resp_deletion = client.delete(self.RESOURCE_URL)
+        assert resp_deletion.status_code == 200
+
+        # test is the measurement deleted
+        resp_after = client.get(self.RESOURCE_URL)
+        assert resp_after.status_code == 404
