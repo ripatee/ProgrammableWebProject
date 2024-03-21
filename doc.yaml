@@ -1,0 +1,334 @@
+openapi: 3.0.0
+info:
+  title: Mokkiwahti API
+  version: 1.0.0
+  description: API documentation for managing locations, sensors, and measurements.
+servers:
+  - url: http://localhost:5000/api
+    description: Local development server
+paths:
+  /locations/:
+    get:
+      summary: List all locations
+      operationId: listLocations
+      tags:
+        - Location
+      responses:
+        '200':
+          description: An array of locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Location'
+    post:
+      summary: Create a new location
+      operationId: createLocation
+      tags:
+        - Location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Location'
+      responses:
+        '201':
+          description: Location created
+          headers:
+            Location:
+              description: URL of the created location
+              schema:
+                type: string
+  /locations/{location}:
+    get:
+      summary: Get a specific location
+      operationId: getLocation
+      tags:
+        - Location
+      parameters:
+        - name: location
+          in: path
+          required: true
+          description: Unique identifier of the location
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A single location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+    put:
+      summary: Update a specific location
+      operationId: updateLocation
+      tags:
+        - Location
+      parameters:
+        - name: location
+          in: path
+          required: true
+          description: Unique identifier of the location to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Location'
+      responses:
+        '200':
+          description: Location updated successfully
+    delete:
+      summary: Delete a specific location
+      operationId: deleteLocation
+      tags:
+        - Location
+      parameters:
+        - name: location
+          in: path
+          required: true
+          description: Unique identifier of the location to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Location deleted successfully
+  /sensors/:
+    get:
+      summary: List all sensors
+      operationId: listSensors
+      tags:
+        - Sensor
+      responses:
+        '200':
+          description: An array of sensors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sensor'
+    post:
+      summary: Add a new sensor
+      operationId: addSensor
+      tags:
+        - Sensor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sensor'
+      responses:
+        '201':
+          description: Sensor added successfully
+  /sensors/{sensor}:
+    get:
+      summary: Get a specific sensor
+      operationId: getSensor
+      tags:
+        - Sensor
+      parameters:
+        - name: sensor
+          in: path
+          required: true
+          description: Unique identifier of the sensor
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A single sensor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sensor'
+    put:
+      summary: Update a specific sensor
+      operationId: updateSensor
+      tags:
+        - Sensor
+      parameters:
+        - name: sensor
+          in: path
+          required: true
+          description: Unique identifier of the sensor to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sensor'
+      responses:
+        '200':
+          description: Sensor updated successfully
+    delete:
+      summary: Delete a specific sensor
+      operationId: deleteSensor
+      tags:
+        - Sensor
+      parameters:
+        - name: sensor
+          in: path
+          required: true
+          description: Unique identifier of the sensor to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sensor deleted successfully
+  /sensors/{sensor}/measurements/:
+    get:
+      summary: List all measurements for a sensor
+      operationId: listMeasurementsForSensor
+      tags:
+        - Measurement
+      parameters:
+        - name: sensor
+          in: path
+          required: true
+          description: Unique identifier of the sensor
+          schema:
+            type: string
+      responses:
+        '200':
+          description: An array of measurements for the specified sensor
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Measurement'
+    post:
+      summary: Add a new measurement for a sensor
+      operationId: addMeasurementForSensor
+      tags:
+        - Measurement
+      parameters:
+        - name: sensor
+          in: path
+          required: true
+          description: Unique identifier of the sensor to add a measurement for
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Measurement'
+      responses:
+        '201':
+          description: Measurement added successfully
+  /measurements/{measurement}:
+    get:
+      summary: Get a specific measurement
+      operationId: getMeasurement
+      tags:
+        - Measurement
+      parameters:
+        - name: measurement
+          in: path
+          required: true
+          description: Unique identifier of the measurement
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A single measurement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Measurement'
+    put:
+      summary: Update a specific measurement
+      operationId: updateMeasurement
+      tags:
+        - Measurement
+      parameters:
+        - name: measurement
+          in: path
+          required: true
+          description: Unique identifier of the measurement to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Measurement'
+      responses:
+        '200':
+          description: Measurement updated successfully
+    delete:
+      summary: Delete a specific measurement
+      operationId: deleteMeasurement
+      tags:
+        - Measurement
+      parameters:
+        - name: measurement
+          in: path
+          required: true
+          description: Unique identifier of the measurement to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Measurement deleted successfully
+components:
+  schemas:
+    Location:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Unique name of the location.
+      required:
+        - name
+    Sensor:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Unique name of the sensor.
+        sensor_configuration:
+          $ref: '#/components/schemas/SensorConfiguration'
+      required:
+        - name
+    SensorConfiguration:
+      type: object
+      properties:
+        interval:
+          type: integer
+          description: Time interval in seconds between measurements.
+        threshold_min:
+          type: number
+          description: Minimum threshold value for triggering an alert.
+        threshold_max:
+          type: number
+          description: Maximum threshold value for triggering an alert.
+      required:
+        - interval
+    Measurement:
+      type: object
+      properties:
+        temperature:
+          type: number
+          description: Temperature value measured by the sensor.
+        humidity:
+          type: number
+          description: Humidity value measured by the sensor.
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the measurement was taken.
+      required:
+        - temperature
+        - humidity
+        - timestamp
