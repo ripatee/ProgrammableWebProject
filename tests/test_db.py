@@ -1,19 +1,25 @@
+"""
+This module test functionality of DB
+Code from mokkiwahti/db_models.py targeted
+"""
+
 import os
-import pytest
 import tempfile
 from time import time
 from datetime import datetime
 
-from mokkiwahti import create_app, db
-
-from mokkiwahti.db_models import Location, Sensor, Measurement, SensorConfiguration
+import pytest
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
 from sqlalchemy.exc import IntegrityError, StatementError
 
-# Enable foreigen key support
+from mokkiwahti import create_app, db
+from mokkiwahti.db_models import Location, Sensor, Measurement, SensorConfiguration
+
+
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
+    """Enable foreign key support"""
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
@@ -21,33 +27,37 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 @pytest.fixture
 def app():
+    """Setup test environment"""
     db_fd, db_fname = tempfile.mkstemp()
     config = {
         "SQLALCHEMY_DATABASE_URI": "sqlite:///" + db_fname,
         "TESTING": True
     }
-    
+
     app = create_app(config)
-    
+
     with app.app_context():
         db.create_all()
-        
+
     yield app
-    
+
     os.close(db_fd)
     os.unlink(db_fname)
 
 def _get_location(name="testipaikka"):
+    """Return valid location obj"""
     return Location(
-        name="{}".format(name),
+        name=f"{name}"
     )
 
 def _get_sensor(name=1):
+    """Return valid sensor obj"""
     return Sensor(
-        name="testsensor-{}".format(name),
+        name=f"testsensor-{name}"
     )
-    
+
 def _get_measurement(temperature=20.51, humidity=45.8):
+    """Return valid meas obj"""
     return Measurement(
         temperature=temperature,
         timestamp=datetime.now(),
@@ -55,6 +65,7 @@ def _get_measurement(temperature=20.51, humidity=45.8):
     )
 
 def _get_sensor_configuration(interval = 900, threshold_min = 15.0, threshold_max = 22.0):
+    """Return valid sensor config obj"""
     return SensorConfiguration(
         interval = interval,
         threshold_min = threshold_min,
@@ -71,7 +82,7 @@ def test_create_instances(app):
     4. check all relationships (both sides)
     5. check that saved values match to given ones
     """
-    
+
     with app.app_context():
         # 1.
         location = _get_location()
@@ -150,7 +161,7 @@ def test_sensor(app):
         db.session.add(sensor2)
         with pytest.raises(IntegrityError):
             db.session.commit()
-        
+
         db.session.rollback()
 
         # name is mandatory
@@ -159,7 +170,7 @@ def test_sensor(app):
         with pytest.raises(IntegrityError):
             db.session.commit()
 
-@pytest.mark.skip(reason="There's currently problem in database validation. Enable after fixing the issue")
+@pytest.mark.skip(reason="There's currently problem in database validation.")
 def test_sensor_configuration(app):
     """
     Test sensor configuration class restrictions.
@@ -173,9 +184,9 @@ def test_sensor_configuration(app):
         db.session.add(sensor_configuration)
         with pytest.raises(IntegrityError):
             db.session.commit()
-        
+
         db.session.rollback()
-        
+
         # interval must be number
         sc_nan_interval = _get_sensor_configuration(interval="100s")
         db.session.add(sc_nan_interval)
@@ -189,7 +200,7 @@ def test_sensor_configuration(app):
         with pytest.raises(StatementError):
             db.session.commit()
         db.session.rollback()
-        
+
         # temperature must be number
         sc_nan_th_max = _get_sensor_configuration(threshold_max="100.0°")
         db.session.add(sc_nan_th_max)
@@ -198,6 +209,10 @@ def test_sensor_configuration(app):
         db.session.rollback()
 
 def test_measurement(app):
+    """
+    Try saving a measurements with bad data type
+    Try saving without required fields
+    """
     with app.app_context():
         # temperature must be number
         meas_nan_temp = _get_measurement(temperature="100°")
@@ -212,7 +227,7 @@ def test_measurement(app):
         with pytest.raises(StatementError):
             db.session.commit()
         db.session.rollback()
-        
+
         # timestamp must be a datetime obj
         sc_bad_timestamp = _get_measurement()
         sc_bad_timestamp.timestamp = time()
@@ -240,7 +255,7 @@ def test_measurement(app):
         with pytest.raises(IntegrityError):
             db.session.commit()
         db.session.rollback()
-        
+
         # timestamp is mandatory
         sc_none_timestamp = _get_measurement()
         sc_none_timestamp.timestamp = None
@@ -271,8 +286,8 @@ def test_location(app):
         db.session.add(loc1)
         with pytest.raises(IntegrityError):
             db.session.commit()
-        
-        
+
+
 def test_multiple_sensors_in_location(app):
     """
     Test that sensors can have same location
@@ -298,7 +313,7 @@ def test_access_nonexistent_sensor(app):
 
 def test_unique_sensor_name(app):
     """
-    Test sensors have unique names 
+    Test sensors have unique names
     """
     with app.app_context():
         sensor1 = _get_sensor(name="unique_sensor")
@@ -311,8 +326,9 @@ def test_unique_sensor_name(app):
             db.session.commit()
         db.session.rollback()
 
-@pytest.mark.skip(reason="There's currently problem in database validation. Enable after fixing the issue")
+@pytest.mark.skip(reason="There's currently problem in database validation.")
 def test_too_long_name(app):
+    """Try saving a sensor with too long name"""
     with app.app_context():
         # form string with length of 65
         too_long_name = "test1" * 13
@@ -320,7 +336,7 @@ def test_too_long_name(app):
         db.session.add(sensor)
         with pytest.raises(IntegrityError):
             db.session.commit()
-        
+
         location = _get_location(name=too_long_name)
         db.session.add(location)
         with pytest.raises(IntegrityError):
