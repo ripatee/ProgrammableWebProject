@@ -41,7 +41,7 @@ paths:
               description: URL of the created location
               schema:
                 type: string
-  /locations/{location}:
+  /locations/{location}/:
     get:
       summary: Get a specific location
       operationId: getLocation
