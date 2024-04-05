@@ -21,6 +21,9 @@ class LocationCollection(Resource):
     def get(self):
         '''
         Returns all locations as a HTTP Response that contains JSON object
+
+        Responses:
+        200 - OK
         '''
 
         locations = []
@@ -37,6 +40,11 @@ class LocationCollection(Resource):
         Deserializes the Location object from JSON
         Adds location to database
         Sends response containing location to the newly added location
+
+        Responses:
+        201 - Created
+        400 - Bad request
+        415 - Unsupported media type
         '''
 
         if not request.json:
@@ -69,6 +77,9 @@ class LocationItem(Resource):
     def get(self, location):
         '''
         Returns a Response containing a specific location item
+
+        Responses:
+        200 - OK
         '''
 
         return Response(json.dumps(location.serialize()), 200, mimetype='application/json')
@@ -79,6 +90,11 @@ class LocationItem(Resource):
 
         Checks that the input is a JSON and validates it agains the schema
         Adds it to the database and returns a Response object with status code 201
+
+        Response:
+        200 - OK
+        400 - BadRequest
+        415 - Unsupported media type
         '''
 
         if not request.json:
@@ -101,6 +117,9 @@ class LocationItem(Resource):
         Deletes a specific location item from the database
 
         Returns a Response object with status code 200
+
+        Responses:
+        200 - OK
         '''
 
         db.session.delete(location)

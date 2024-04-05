@@ -14,12 +14,15 @@ from mokkiwahti import db
 
 class MeasurementCollection(Resource):
     '''
-    MeasurementCollection resourse. Supports GET and POSt methods
+    MeasurementCollection resourse. Supports GET and POST methods
     '''
 
     def get(self, location=None, sensor=None):
         '''
-        Returns specific measurements by location or sensor.
+        Returns specific measurement by location or sensor.
+
+        Responses:
+        200 - OK
         '''
 
         measurements = []
@@ -50,6 +53,11 @@ class MeasurementCollection(Resource):
         Deserializes the Measurement object from JSON
         Add measuerement to the database
         Sends response containing location to the newly added measurements
+
+        Possible responses:
+        201 - Created
+        400 - Bad request
+        415 - Unsupported media type
         '''
 
         if not request.json:
@@ -83,6 +91,9 @@ class MeasurementItem(Resource):
     def get(self, measurement):
         '''
         Returns a Response object containin a specific measurement item
+
+        Responses:
+        200 - OK
         '''
 
         return Response(json.dumps(measurement.serialize(),
@@ -94,7 +105,12 @@ class MeasurementItem(Resource):
         Modifies an existing measurement resource
 
         Checks that the input is a JSON and validates it agains the schema
-        Adds it to the database and returns a Response object with status code 200
+        Adds it to the database and returns a Response object
+
+        Responses:
+        200 - OK
+        400 - Bad Request
+        415 - Unsupported media type
         '''
 
         if not request.json:
@@ -119,6 +135,9 @@ class MeasurementItem(Resource):
         Deletes a specific location item from the database
 
         Returns a Response object with status code 200
+
+        Responses:
+        200 - OK
         '''
 
         db.session.delete(measurement)

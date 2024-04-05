@@ -22,6 +22,9 @@ class SensorCollection(Resource):
         '''
         Returns all locations as a HTTP Response object that contains sensor
         information as a JSON object
+
+        Responses:
+        200 - OK
         '''
 
         sensors = []
@@ -38,6 +41,10 @@ class SensorCollection(Resource):
         Deserializes the Sensor object from JSON
         Adds sensor to database
         Sends response containing location to the newly added sensor
+
+        Responses:
+        201 - Created
+        400 - Bad request
         '''
 
         if not request.json:
@@ -77,6 +84,9 @@ class SensorItem(Resource):
     def get(self, sensor):
         '''
         Returns a Response containing a specific sensor item
+
+        Responses:
+        200 - OK
         '''
 
         return Response(json.dumps(sensor.serialize()), 200, mimetype='application/json')
@@ -86,7 +96,11 @@ class SensorItem(Resource):
         Modifies an existing sensor resource
 
         Checks that the input is a JSON and validates it agains the schema
-        Adds it to the database and returns a Response object with status code 201
+        Adds it to the database and returns a Response object
+
+        Possible response codes:
+        201 - Created
+        400 - Bad request
         '''
 
         if not request.json:
@@ -111,6 +125,9 @@ class SensorItem(Resource):
         Deletes a specific Sensor item from the database
 
         Returns a Response object with status code 200
+
+        Responses:
+        200 - OK
         '''
 
         db.session.delete(sensor)
