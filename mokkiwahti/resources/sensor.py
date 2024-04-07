@@ -45,6 +45,7 @@ class SensorCollection(Resource):
         Responses:
         201 - Created
         400 - Bad request
+        415 - Unsupported media type
         '''
 
         if not request.json:
@@ -101,6 +102,7 @@ class SensorItem(Resource):
         Possible response codes:
         201 - Created
         400 - Bad request
+        415 - Unsupported media type
         '''
 
         if not request.json:
