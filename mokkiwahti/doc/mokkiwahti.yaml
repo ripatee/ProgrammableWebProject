@@ -48,12 +48,7 @@ paths:
       tags:
         - Location
       parameters:
-        - name: location
-          in: path
-          required: true
-          description: Unique identifier of the location
-          schema:
-            type: string
+        - $ref: '#/components/parameters/location'
       responses:
         '200':
           description: A single location
@@ -67,12 +62,7 @@ paths:
       tags:
         - Location
       parameters:
-        - name: location
-          in: path
-          required: true
-          description: Unique identifier of the location to update
-          schema:
-            type: string
+        - $ref: '#/components/parameters/location'
       requestBody:
         required: true
         content:
@@ -88,12 +78,7 @@ paths:
       tags:
         - Location
       parameters:
-        - name: location
-          in: path
-          required: true
-          description: Unique identifier of the location to delete
-          schema:
-            type: string
+        - $ref: '#/components/parameters/location'
       responses:
         '200':
           description: Location deleted successfully
@@ -133,12 +118,7 @@ paths:
       tags:
         - Sensor
       parameters:
-        - name: sensor
-          in: path
-          required: true
-          description: Unique identifier of the sensor
-          schema:
-            type: string
+        - $ref: '#/components/parameters/sensor'
       responses:
         '200':
           description: A single sensor
@@ -152,12 +132,7 @@ paths:
       tags:
         - Sensor
       parameters:
-        - name: sensor
-          in: path
-          required: true
-          description: Unique identifier of the sensor to update
-          schema:
-            type: string
+        - $ref: '#/components/parameters/sensor'
       requestBody:
         required: true
         content:
@@ -173,12 +148,7 @@ paths:
       tags:
         - Sensor
       parameters:
-        - name: sensor
-          in: path
-          required: true
-          description: Unique identifier of the sensor to delete
-          schema:
-            type: string
+        - $ref: '#/components/parameters/sensor'
       responses:
         '200':
           description: Sensor deleted successfully
@@ -189,12 +159,7 @@ paths:
       tags:
         - Measurement
       parameters:
-        - name: sensor
-          in: path
-          required: true
-          description: Unique identifier of the sensor
-          schema:
-            type: string
+        - $ref: '#/components/parameters/sensor'
       responses:
         '200':
           description: An array of measurements for the specified sensor
@@ -210,12 +175,7 @@ paths:
       tags:
         - Measurement
       parameters:
-        - name: sensor
-          in: path
-          required: true
-          description: Unique identifier of the sensor to add a measurement for
-          schema:
-            type: string
+        - $ref: '#/components/parameters/sensor'
       requestBody:
         required: true
         content:
@@ -232,12 +192,7 @@ paths:
       tags:
         - Measurement
       parameters:
-        - name: measurement
-          in: path
-          required: true
-          description: Unique identifier of the measurement
-          schema:
-            type: string
+        - $ref: '#/components/parameters/measurement'
       responses:
         '200':
           description: A single measurement
@@ -251,12 +206,7 @@ paths:
       tags:
         - Measurement
       parameters:
-        - name: measurement
-          in: path
-          required: true
-          description: Unique identifier of the measurement to update
-          schema:
-            type: string
+        - $ref: '#/components/parameters/measurement'
       requestBody:
         required: true
         content:
@@ -281,6 +231,7 @@ paths:
       responses:
         '200':
           description: Measurement deleted successfully
+
 components:
   schemas:
     Location:
@@ -332,3 +283,25 @@ components:
         - temperature
         - humidity
         - timestamp
+  parameters:
+    sensor:
+      name: sensor
+      in: path
+      required: true
+      description: Unique identifier of the sensor
+      schema:
+        type: string
+    location:
+      name: location
+      in: path
+      required: true
+      description: Unique identifier of the location
+      schema:
+        type: string
+    measurement:
+      name: measurement
+      in: path
+      required: true
+      description: Unique identifier of the measurement to delete
+      schema:
+        type: string
