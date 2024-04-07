@@ -38,17 +38,19 @@ paths:
           description: Location created
           headers:
             Location:
-              description: URL of the created location
-              schema:
-                type: string
+              $ref: '#/components/headers/Location'
+        '400':
+          description: Request body vas not valid
+        '415':
+          description: Wrong media type was used
   /locations/{location}/:
+    parameters:
+      - $ref: '#/components/parameters/location'
     get:
       summary: Get a specific location
       operationId: getLocation
       tags:
         - Location
-      parameters:
-        - $ref: '#/components/parameters/location'
       responses:
         '200':
           description: A single location
@@ -56,13 +58,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Location'
+        '404':
+          description: Location was not found
     put:
       summary: Update a specific location
       operationId: updateLocation
       tags:
         - Location
-      parameters:
-        - $ref: '#/components/parameters/location'
       requestBody:
         required: true
         content:
@@ -72,16 +74,22 @@ paths:
       responses:
         '200':
           description: Location updated successfully
+        '400':
+          description: Request body was not valid
+        '404':
+          description: Location was not found
+        '415':
+          description: Unsupported media type was used
     delete:
       summary: Delete a specific location
       operationId: deleteLocation
       tags:
         - Location
-      parameters:
-        - $ref: '#/components/parameters/location'
       responses:
         '200':
           description: Location deleted successfully
+        '404':
+          description: Location was not found
   /sensors/:
     get:
       summary: List all sensors
@@ -111,14 +119,21 @@ paths:
       responses:
         '201':
           description: Sensor added successfully
-  /sensors/{sensor}:
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+        '400':
+          description: Request body was invalid
+        '415':
+          description: Unsupported media type was used
+  /sensors/{sensor}/:
+    parameters:
+      - $ref: '#/components/parameters/sensor'
     get:
       summary: Get a specific sensor
       operationId: getSensor
       tags:
         - Sensor
-      parameters:
-        - $ref: '#/components/parameters/sensor'
       responses:
         '200':
           description: A single sensor
@@ -126,13 +141,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Sensor'
+        '404':
+          descrdiption: Sensor was not found
     put:
       summary: Update a specific sensor
       operationId: updateSensor
       tags:
         - Sensor
-      parameters:
-        - $ref: '#/components/parameters/sensor'
       requestBody:
         required: true
         content:
@@ -142,24 +157,30 @@ paths:
       responses:
         '200':
           description: Sensor updated successfully
+        '400':
+          description: Request body was invalid
+        '404':
+          description: Sensor was not found
+        '415':
+          description: Unsupported media type was used
     delete:
       summary: Delete a specific sensor
       operationId: deleteSensor
       tags:
         - Sensor
-      parameters:
-        - $ref: '#/components/parameters/sensor'
       responses:
         '200':
           description: Sensor deleted successfully
+        '404':
+          description: Sensor was not found
   /sensors/{sensor}/measurements/:
+    parameters:
+      - $ref: '#/components/parameters/sensor'
     get:
       summary: List all measurements for a sensor
       operationId: listMeasurementsForSensor
       tags:
         - Measurement
-      parameters:
-        - $ref: '#/components/parameters/sensor'
       responses:
         '200':
           description: An array of measurements for the specified sensor
@@ -174,8 +195,6 @@ paths:
       operationId: addMeasurementForSensor
       tags:
         - Measurement
-      parameters:
-        - $ref: '#/components/parameters/sensor'
       requestBody:
         required: true
         content:
@@ -185,14 +204,23 @@ paths:
       responses:
         '201':
           description: Measurement added successfully
-  /measurements/{measurement}:
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+        '400':
+          description: Bad request body was used
+        '404':
+          description: Sensor was not found
+        '415':
+          description: Unsupported media type was used
+  /measurements/{measurement}/:
+    parameters:
+    - $ref: '#/components/parameters/measurement'
     get:
       summary: Get a specific measurement
       operationId: getMeasurement
       tags:
         - Measurement
-      parameters:
-        - $ref: '#/components/parameters/measurement'
       responses:
         '200':
           description: A single measurement
@@ -200,13 +228,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Measurement'
+        '404':
+          description: Measurement was not found
     put:
       summary: Update a specific measurement
       operationId: updateMeasurement
       tags:
         - Measurement
-      parameters:
-        - $ref: '#/components/parameters/measurement'
       requestBody:
         required: true
         content:
@@ -216,21 +244,46 @@ paths:
       responses:
         '200':
           description: Measurement updated successfully
+        '400':
+          description: Bad request body was used
+        '404':
+          description: Measurement was not found
+        '415':
+          description: Unsupported media type was used
     delete:
       summary: Delete a specific measurement
       operationId: deleteMeasurement
       tags:
         - Measurement
-      parameters:
-        - name: measurement
-          in: path
-          required: true
-          description: Unique identifier of the measurement to delete
-          schema:
-            type: string
       responses:
         '200':
           description: Measurement deleted successfully
+        '404':
+          description: Measurement was not found
+  /location/{location}/link/sensors/{sensor}/:
+    parameters:
+    - $ref: '#/components/parameters/location'
+      $ref: '#/components/parameters/sensor'
+    put:
+      summary: Links sensor to a definied location
+      operationId: linkSensorLocation
+      tags:
+        -  Location Sensor link
+      responses:
+        '200':
+          description: Link made correctly
+        '404':
+          description: Location or sensor not found
+    delete:
+      summary: Deletes a link between sensor and location
+      operationId: deleteLinkSensorLocation
+      tags:
+        - Location Sensor link
+      responses:
+        '200':
+          description: Link deleted
+        '404':
+          description: Resource not found
 
 components:
   schemas:
@@ -303,5 +356,11 @@ components:
       in: path
       required: true
       description: Unique identifier of the measurement to delete
+      schema:
+        type: string
+  headers:
+    Location:
+      name: Location
+      description: URL of the created resource
       schema:
         type: string
