@@ -140,6 +140,24 @@ class TestLocationResource():
                 new_found = True
         assert new_found
 
+    
+    def test_post_new_location_bad_request(self, client):
+        invalid_location_data = {"invalid_field": "value"}
+        response = client.post(self.RESOURCE_URL, json=invalid_location_data)
+        assert response.status_code == 400
+
+
+    def test_put_modify_location(self, client):
+        client.post(self.RESOURCE_URL, json={"name": "Initial Location Name"})
+
+        response = client.get(self.RESOURCE_URL)
+        locations = json.loads(response.data)
+        location_name = locations[0]['name']
+
+        updated_location_data = {"name": "Updated Location Name"}
+        modify_response = client.put(f'/api/locations/{location_name}/', json=updated_location_data)  # Use the identifier in the URL
+        assert modify_response.status_code == 200
+
     @pytest.mark.skip(reason="Allows extra fields in POST, doesn't save them to DB")
     def test_post_w_bad_data(self, client):
         """test post method with bad data"""
