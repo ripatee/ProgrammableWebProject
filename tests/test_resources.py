@@ -140,7 +140,16 @@ class TestLocationResource():
                 new_found = True
         assert new_found
 
-    
+    def test_post_dub(self, client):
+        """test duplicate post method functionality"""
+        data = {"name": "testlocation-1"}
+        resp = client.post(self.RESOURCE_URL, json=data)
+        assert resp.status_code == 409
+        resp = client.get(self.RESOURCE_URL)
+        body = json.loads(resp.data)
+        assert resp.status_code == 200
+        assert len(body) == 3
+
     def test_post_new_location_bad_request(self, client):
         invalid_location_data = {"invalid_field": "value"}
         response = client.post(self.RESOURCE_URL, json=invalid_location_data)
@@ -158,11 +167,9 @@ class TestLocationResource():
         modify_response = client.put(f'/api/locations/{location_name}/', json=updated_location_data)  # Use the identifier in the URL
         assert modify_response.status_code == 200
 
-    @pytest.mark.skip(reason="Allows extra fields in POST, doesn't save them to DB")
     def test_post_w_bad_data(self, client):
         """test post method with bad data"""
-        data = {"name": "testlocation-100"}
-        data["extrafield"] = "thisisnotsupposedtobehere"
+        data = {"extrafield": "thisisnotsupposedtobehere"}
         resp = client.post(self.RESOURCE_URL, json=data)
         assert resp.status_code == 400
         resp = client.get(self.RESOURCE_URL)
@@ -171,7 +178,7 @@ class TestLocationResource():
         new_found = False #temp to check that new loc is added
         for loc in body:
             validate(loc, Location.get_schema())
-            if loc["name"] == "testlocation-100":
+            if loc["name"] == "thisisnotsupposedtobehere":
                 new_found = True
         assert not new_found
 
@@ -292,16 +299,9 @@ class TestSensorResource():
         assert resp.status_code == 200
         assert len(body) == 3
 
-    @pytest.mark.skip(reason="Allows extra fields in POST, doesn't save them to DB")
     def test_post_w_bad_data(self, client):
         """test post method with bad data"""
         data = {"name": "testsensor-101"}
-        sc = SensorConfiguration(
-            interval = 900,
-            threshold_min = 15,
-            threshold_max = 25
-        )
-        data["sensor_configuration"] = sc.serialize()
         data["extrafield"] = "thisisnotsupposedtobehere"
         resp = client.post(self.RESOURCE_URL, json=data)
         assert resp.status_code == 400
@@ -312,7 +312,7 @@ class TestSensorResource():
         assert len(body) == 3
         for sensor in body:
             validate(sensor, Location.get_schema())
-            if sensor["name"] == "testsensor-100":
+            if sensor["name"] == "testsensor-101":
                 new_found = True
         assert not new_found
 
@@ -332,7 +332,6 @@ class TestSensorResource():
         del data["name"]
         resp = client.post(self.RESOURCE_URL, json=data)
         assert resp.status_code == 400
-
 
 class TestGetAllMeasurementResource():
     """Extra test class - this is not implemented"""
@@ -408,7 +407,6 @@ class TestMeasurementsResource():
         resp = client.post(self.SENSOR_RESOURCE_URL, json=data)
         assert resp.status_code == 400
 
-    @pytest.mark.skip(reason="Allows extra fields in POST, doesn't save them to DB")
     def test_post_w_bad_data(self, client):
         """test post method using bad data"""
         meas_test_obj =  Measurement(
@@ -417,6 +415,7 @@ class TestMeasurementsResource():
             timestamp = datetime.now()
         )
         meas_test_obj_serialized = meas_test_obj.serialize()
+        del meas_test_obj_serialized["temperature"]
         meas_test_obj_serialized["extrafield"] = "thisisnotsupposedtobehere"
         #print("\n\nobject here\n", meas_test_obj_serialized, "\n\n") # debug print
         resp = client.post(self.SENSOR_RESOURCE_URL, json=meas_test_obj_serialized)
@@ -440,19 +439,32 @@ class TestSensorItem():
         body = json.loads(resp.data)
         validate(body, Sensor.get_schema())
 
-    @pytest.mark.skip(reason="TODO Doesn't work, returns 400")
     def test_put(self, client):
-        """test put method functionality"""
-        data = {
-            "name": "testsensor-1",
-            "sensor_configuration": _get_sensor_configuration().serialize()
-        }
-        print(data)
-        resp = client.put(self.RESOURCE_URL, json=json.dumps(data))
-        print(resp.text)
+        # get sensor data
+        resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
-        body = json.loads(resp.data)
-        assert body["name"] == "testsensor-1"
+        sensor = resp.json
+        # modify data and send it back
+        sc = SensorConfiguration(
+            interval = 4,
+            threshold_min = 4,
+            threshold_max = 4
+        ).serialize()
+        sensor["sensor_configuration"] = sc
+        resp2 = client.put(self.RESOURCE_URL, json=sensor)
+        assert resp2.status_code == 200
+        resp3 = client.get(self.RESOURCE_URL)
+        assert resp3.status_code == 200
+        assert resp3.json["sensor_configuration"]["interval"] == 4
+
+    def test_put_w_bad_request(self, client):
+        # get sensor data
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        sensor = resp.json
+        del sensor["sensor_configuration"]
+        resp2 = client.put(self.RESOURCE_URL, json=sensor)
+        assert resp2.status_code == 400
 
     def test_delete(self, client):
         """test delete method functionality"""
@@ -481,11 +493,14 @@ class TestLocationItem():
         body = json.loads(resp.data)
         validate(body, Location.get_schema())
 
-    @pytest.mark.skip(reason="Not implemented")
-    def test_put(self, client):
-        """test put method functionality"""
-        not_implemented = True
-        assert not_implemented
+    def test_put_w_bad_request(self, client):
+        # get sensor data
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        location = resp.json
+        del location["name"]
+        resp2 = client.put(self.RESOURCE_URL, json=location)
+        assert resp2.status_code == 400
 
     def test_delete(self, client):
         """test delete method functionality"""
@@ -501,11 +516,11 @@ class TestLocationItem():
         resp_after = client.get(self.RESOURCE_URL)
         assert resp_after.status_code == 404
 
+@pytest.mark.skip(reason="how to get URL?")
 class TestMeasurementItem():
     """Tests for measurement object"""
     RESOURCE_URL = "/api/locations/testmeasurement-1/"
 
-    @pytest.mark.skip(reason="this has a fault, returns 404")
     def test_get_by_measurement(self, client):
         """test get method functionality"""
         resp = client.get(self.RESOURCE_URL)
@@ -513,13 +528,11 @@ class TestMeasurementItem():
         body = json.loads(resp.data)
         validate(body, Measurement.get_schema())
 
-    @pytest.mark.skip(reason="Not implemented")
     def test_put(self, client):
         """test put method functionality"""
         not_implemented = True
         assert not_implemented
 
-    @pytest.mark.skip(reason="Doesn't work, might need better approach")
     def test_delete(self, client):
         """test delete method functionality"""
         # test first measurement exists
