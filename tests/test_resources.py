@@ -276,6 +276,22 @@ class TestSensorResource():
                 new_found = True
         assert new_found
 
+    def test_post_dub(self, client):
+        """test duplicate post method functionality"""
+        data = {"name": "testsensor-1"}
+        sc = SensorConfiguration(
+            interval = 900,
+            threshold_min = 15,
+            threshold_max = 25
+        )
+        data["sensor_configuration"] = sc.serialize()
+        resp = client.post(self.RESOURCE_URL, json=data)
+        assert resp.status_code == 409
+        resp = client.get(self.RESOURCE_URL)
+        body = json.loads(resp.data)
+        assert resp.status_code == 200
+        assert len(body) == 3
+
     @pytest.mark.skip(reason="Allows extra fields in POST, doesn't save them to DB")
     def test_post_w_bad_data(self, client):
         """test post method with bad data"""
@@ -299,6 +315,23 @@ class TestSensorResource():
             if sensor["name"] == "testsensor-100":
                 new_found = True
         assert not new_found
+
+    def test_non_JSON_post(self, client):
+        """test post method with empty json field"""
+        meas_test_obj =  _get_sensor()
+        resp = client.post(self.RESOURCE_URL, data=meas_test_obj.serialize())
+        assert resp.status_code == 415
+
+    def test_bad_JSON_post(self, client):
+        """test post method with missing required field"""
+        test_obj =  Sensor(
+            name = "test_sensor",
+            sensor_configuration = _get_sensor_configuration()
+        )
+        data = test_obj.serialize()
+        del data["name"]
+        resp = client.post(self.RESOURCE_URL, json=data)
+        assert resp.status_code == 400
 
 
 class TestGetAllMeasurementResource():
@@ -352,6 +385,28 @@ class TestMeasurementsResource():
         assert len(body) == 2
         for meas in body:
             validate(meas, Measurement.get_schema())
+
+    def test_non_JSON_post(self, client):
+        """test post method with empty json field"""
+        meas_test_obj =  Measurement(
+            temperature = 22.2,
+            humidity = 55.2,
+            timestamp = datetime.now()
+        )
+        resp = client.post(self.SENSOR_RESOURCE_URL, data=meas_test_obj.serialize())
+        assert resp.status_code == 415
+
+    def test_bad_JSON_post(self, client):
+        """test post method with missing required field"""
+        meas_test_obj =  Measurement(
+            temperature = 22.2,
+            humidity = 55.2,
+            timestamp = datetime.now()
+        )
+        data = meas_test_obj.serialize()
+        del data["timestamp"]
+        resp = client.post(self.SENSOR_RESOURCE_URL, json=data)
+        assert resp.status_code == 400
 
     @pytest.mark.skip(reason="Allows extra fields in POST, doesn't save them to DB")
     def test_post_w_bad_data(self, client):
