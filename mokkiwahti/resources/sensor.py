@@ -68,7 +68,7 @@ class SensorCollection(Resource):
 
             db.session.add(sensor)
             db.session.commit()
-        except IntegrityError:
+        except IntegrityError as e:
             raise Conflict(
                 description=f"Sensor with name: {sensor.name} already found"
             ) from e
