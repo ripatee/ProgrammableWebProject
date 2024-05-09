@@ -41,50 +41,50 @@
 
 
 ## Meeting 3.
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE: 2024-03-25**
+* **ASSISTANTS: Mika Oja**
 
 ### Minutes
-*Summary of what was discussed during the meeting*
+*We went through the implementation and tests and some parts of the Wiki report. We also discussed about the future deadlines shortly*
 
 ### Action points
-*List here the actions points discussed with assistants*
-
+*Here are few action points from the meeting:*
+- Wiki report lacked descriptions on some of the parts.
+- In basic implementation pylist tests needed some cleaning
+- In Basic Implementation documentation, endpoint documentation needed more information related to return codes and etc.
+- Test coverage wasn't high enough and needed more tests/higher score.
+- Schema validation lacked description.
 
 
 
 ## Meeting 4.
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE: [empty]**
+* **ASSISTANTS: [empty]**
 
 ### Minutes
-*Summary of what was discussed during the meeting*
+*There was no meeting 4.*
 
 ### Action points
-*List here the actions points discussed with assistants*
-
-
-
+*[empty]*
 
 ## Midterm meeting
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE: [empty]**
+* **ASSISTANTS: [empty]**
 
 ### Minutes
-*Summary of what was discussed during the meeting*
+*There was no Midterm meeting.*
 
 ### Action points
-*List here the actions points discussed with assistants*
-
-
-
+*[empty]*
 
 ## Final meeting
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE: 2024-05-15**
+* **ASSISTANTS: Iván Sánchez Milara**
 
 ### Minutes
 *Summary of what was discussed during the meeting*
+
+-TBA, meeting hasn't yet occurred-
 
 ### Action points
 *List here the actions points discussed with assistants*
