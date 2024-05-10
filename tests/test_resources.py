@@ -516,33 +516,67 @@ class TestLocationItem():
         resp_after = client.get(self.RESOURCE_URL)
         assert resp_after.status_code == 404
 
-@pytest.mark.skip(reason="how to get URL?")
+
 class TestMeasurementItem():
     """Tests for measurement object"""
-    RESOURCE_URL = "/api/locations/testmeasurement-1/"
+    RESOURCE_URL = "/api/sensors/testsensor-1/measurements/"
 
+    @pytest.mark.skip(reason="TODO")
     def test_get_by_measurement(self, client):
         """test get method functionality"""
-        resp = client.get(self.RESOURCE_URL)
-        assert resp.status_code == 200
-        body = json.loads(resp.data)
-        validate(body, Measurement.get_schema())
+        # create and get meas resource url
+        meas_test_obj =  Measurement(
+            temperature = 22.2,
+            humidity = 55.2,
+            timestamp = datetime.now()
+        )
+        resp = client.post(self.RESOURCE_URL, json=meas_test_obj.serialize())
+        meas_url = resp.headers["Location"]
+        resp2 = client.get(meas_url)
+        assert resp2.status_code == 200
+        # delete and re-check
+        client.delete(meas_url)
+        resp3 = client.get(meas_url)
+        assert resp3.status_code == 404
+
 
     def test_put(self, client):
         """test put method functionality"""
-        not_implemented = True
-        assert not_implemented
+        meas_test_obj =  Measurement(
+            temperature = 22.2,
+            humidity = 55.2,
+            timestamp = datetime.now()
+        )
+        meas_test_obj2 =  Measurement(
+            temperature = 12.3,
+            humidity = 45.6,
+            timestamp = datetime.now()
+        )
+        resp = client.post(self.RESOURCE_URL, json=meas_test_obj.serialize())
+        meas_url = resp.headers["Location"]
+        assert resp.status_code == 201
+        resp2 = client.put(meas_url, json=meas_test_obj2.serialize())
+        assert resp.status_code == 201
 
     def test_delete(self, client):
         """test delete method functionality"""
-        # test first measurement exists
-        resp_before = client.get(self.RESOURCE_URL)
-        assert resp_before.status_code == 200
+        # create and get meas resource url
+        meas_test_obj =  Measurement(
+            temperature = 22.2,
+            humidity = 55.2,
+            timestamp = datetime.now()
+        )
+        resp = client.post(self.RESOURCE_URL, json=meas_test_obj.serialize())
+        meas_url = resp.headers["Location"]
 
-        # now delete measurement
-        resp_deletion = client.delete(self.RESOURCE_URL)
+        # make sure new meas added
+        resp_after = client.get(self.RESOURCE_URL)
+        assert len(resp_after.json) == 2
+
+        # delete measurement
+        resp_deletion = client.delete(meas_url)
         assert resp_deletion.status_code == 200
 
         # test is the measurement deleted
         resp_after = client.get(self.RESOURCE_URL)
-        assert resp_after.status_code == 404
+        assert len(resp_after.json) == 1
