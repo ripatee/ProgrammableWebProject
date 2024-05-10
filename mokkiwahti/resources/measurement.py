@@ -80,7 +80,7 @@ class MeasurementCollection(Resource):
         db.session.commit()
 
         return Response(status=201, headers={
-            "Location:": url_for("api.measurementitem", measurement=measurement)
+            "Location": url_for("api.measurementitem", measurement=measurement)
         })
 
 class MeasurementItem(Resource):
