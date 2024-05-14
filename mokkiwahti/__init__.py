@@ -5,7 +5,6 @@ Initialize the Mokkiwahti API
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flasgger import Swagger, swag_from
 
 db = SQLAlchemy()
 
@@ -30,8 +29,6 @@ def create_app(test_config=None):
         "openapi": "3.0.3",
         "uiversion": 3,
     }
-
-    swagger = Swagger(app, template_file="doc/mokkiwahti.yaml")
 
     if test_config is None:
         app.config.from_pyfile("config.py", silent=True)

@@ -151,12 +151,14 @@ class TestLocationResource():
         assert len(body) == 3
 
     def test_post_new_location_bad_request(self, client):
+        """test post method with invalid data"""
         invalid_location_data = {"invalid_field": "value"}
         response = client.post(self.RESOURCE_URL, json=invalid_location_data)
         assert response.status_code == 400
 
 
     def test_put_modify_location(self, client):
+        """test put method with valid data"""
         client.post(self.RESOURCE_URL, json={"name": "Initial Location Name"})
 
         response = client.get(self.RESOURCE_URL)
@@ -164,7 +166,8 @@ class TestLocationResource():
         location_name = locations[0]['name']
 
         updated_location_data = {"name": "Updated Location Name"}
-        modify_response = client.put(f'/api/locations/{location_name}/', json=updated_location_data)  # Use the identifier in the URL
+        modify_response = client.put(f'/api/locations/{location_name}/',
+                                     json=updated_location_data)  # Use the identifier in the URL
         assert modify_response.status_code == 200
 
     def test_post_w_bad_data(self, client):
@@ -316,13 +319,13 @@ class TestSensorResource():
                 new_found = True
         assert not new_found
 
-    def test_non_JSON_post(self, client):
+    def test_non_json_post(self, client):
         """test post method with empty json field"""
         meas_test_obj =  _get_sensor()
         resp = client.post(self.RESOURCE_URL, data=meas_test_obj.serialize())
         assert resp.status_code == 415
 
-    def test_bad_JSON_post(self, client):
+    def test_bad_json_post(self, client):
         """test post method with missing required field"""
         test_obj =  Sensor(
             name = "test_sensor",
@@ -332,20 +335,6 @@ class TestSensorResource():
         del data["name"]
         resp = client.post(self.RESOURCE_URL, json=data)
         assert resp.status_code == 400
-
-class TestGetAllMeasurementResource():
-    """Extra test class - this is not implemented"""
-    RESOURCE_URL = "/api/measurements/"
-
-    @pytest.mark.skip(reason="Not implemented")
-    def test_get(self, client):
-        """test get method functionality
-        Extra test - this is not implemented"""
-        resp = client.get(self.RESOURCE_URL)
-        assert resp.status_code == 200
-        body = json.loads(resp.data)
-        for meas in body:
-            validate(meas, Measurement.get_schema())
 
 class TestMeasurementsResource():
     """Tests for measurements resource"""
@@ -385,7 +374,7 @@ class TestMeasurementsResource():
         for meas in body:
             validate(meas, Measurement.get_schema())
 
-    def test_non_JSON_post(self, client):
+    def test_non_json_post(self, client):
         """test post method with empty json field"""
         meas_test_obj =  Measurement(
             temperature = 22.2,
@@ -395,7 +384,7 @@ class TestMeasurementsResource():
         resp = client.post(self.SENSOR_RESOURCE_URL, data=meas_test_obj.serialize())
         assert resp.status_code == 415
 
-    def test_bad_JSON_post(self, client):
+    def test_bad_json_post(self, client):
         """test post method with missing required field"""
         meas_test_obj =  Measurement(
             temperature = 22.2,
@@ -433,13 +422,14 @@ class TestSensorItem():
     RESOURCE_URL = "/api/sensors/testsensor-1/"
 
     def test_get_by_sensor(self, client):
-        """test get method functionality"""
+        """test get method functionality with given sensor"""
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
         body = json.loads(resp.data)
         validate(body, Sensor.get_schema())
 
     def test_put(self, client):
+        """test post method functionality with valid data"""
         # get sensor data
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -458,6 +448,7 @@ class TestSensorItem():
         assert resp3.json["sensor_configuration"]["interval"] == 4
 
     def test_put_w_bad_request(self, client):
+        """test put method functionality with bad data"""
         # get sensor data
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -494,6 +485,7 @@ class TestLocationItem():
         validate(body, Location.get_schema())
 
     def test_put_w_bad_request(self, client):
+        """test put method functionality with bad data"""
         # get sensor data
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -521,25 +513,6 @@ class TestMeasurementItem():
     """Tests for measurement object"""
     RESOURCE_URL = "/api/sensors/testsensor-1/measurements/"
 
-    @pytest.mark.skip(reason="TODO")
-    def test_get_by_measurement(self, client):
-        """test get method functionality"""
-        # create and get meas resource url
-        meas_test_obj =  Measurement(
-            temperature = 22.2,
-            humidity = 55.2,
-            timestamp = datetime.now()
-        )
-        resp = client.post(self.RESOURCE_URL, json=meas_test_obj.serialize())
-        meas_url = resp.headers["Location"]
-        resp2 = client.get(meas_url)
-        assert resp2.status_code == 200
-        # delete and re-check
-        client.delete(meas_url)
-        resp3 = client.get(meas_url)
-        assert resp3.status_code == 404
-
-
     def test_put(self, client):
         """test put method functionality"""
         meas_test_obj =  Measurement(
@@ -556,7 +529,7 @@ class TestMeasurementItem():
         meas_url = resp.headers["Location"]
         assert resp.status_code == 201
         resp2 = client.put(meas_url, json=meas_test_obj2.serialize())
-        assert resp.status_code == 201
+        assert resp2.status_code == 200
 
     def test_delete(self, client):
         """test delete method functionality"""

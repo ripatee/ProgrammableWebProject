@@ -74,6 +74,12 @@ class MeasurementCollection(Resource):
         measurement = Measurement()
         measurement.deserialize(request.json)
         measurement.sensor = sensor
+
+        db.session.add(measurement)
+        db.session.commit()
+
+        # Tests put out a warning if this is ran
+        # before adding measurement object to session
         measurement.location = sensor.location
 
         db.session.add(measurement)
